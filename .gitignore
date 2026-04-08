@@ -10,3 +10,10 @@ Datathon - fase.txt.txt
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+
+# MLOps & Arquivos de Dados
+mlruns/
+*.db
+*.skops
+build/
+*.csv

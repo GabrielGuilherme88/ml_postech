@@ -1,63 +1,87 @@
-"""Pipeline de treinamento com MLflow tracking padronizado."""
-import logging
-import mlflow
 import pandas as pd
-from sklearn.metrics import (
-    f1_score,
-    precision_score,
-    recall_score,
-    roc_auc_score,
-)
+from pathlib import Path
+import skops.io as sio
+import json
+import mlflow
+import mlflow.sklearn
+
+caminho_base = Path(__file__).resolve().parents[2]
+caminho_arquivo = caminho_base / "build" / "raw" / "dados_reembolso_hipoteticos.csv"
+
+print(f"Buscando arquivo em: {caminho_arquivo}")
+
+df = pd.read_csv(caminho_arquivo, sep=';')
+
 from sklearn.model_selection import train_test_split
-from typing import Any
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error
+import pandas as pd
 
-logger = logging.getLogger(__name__)
+# 1. Expandindo nossas Variáveis Preditivas (X) e nosso Alvo (y)
+colunas_preditoras = ['cd_procedimento', 'vl_informado', 'qt_informado', 'cd_tipoproduto']
+alvo = 'vl_glosa'
 
-def train_and_log(
-    df: pd.DataFrame,
-    target_col: str,
-    model_name: str,
-    model_class: Any,
-    model_params: dict[str, Any],
-    test_size: float = 0.2,
-    random_state: int = 42,
-) -> str:
-    """Treina modelo, loga tudo no MLflow, retorna run_id."""
-    X = df.drop(columns=[target_col])
-    y = df[target_col]
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=test_size, random_state=random_state, stratify=y
-    )
+# 2. Separando "O Passado/Decidido" vs "O Futuro/Em Análise"
+df_historico = df[df['nm_situacaoreembolso'].isin(['PAGO', 'INDEFERIDO'])].copy()
+df_futuro_analise = df[df['nm_situacaoreembolso'] == 'EM ANALISE'].copy()
 
-    with mlflow.start_run(run_name=model_name) as run:
-        mlflow.log_params(model_params)
-        mlflow.log_param("test_size", test_size)
-        mlflow.log_param("random_state", random_state)
-        mlflow.log_param("n_features", X_train.shape[1])
-        mlflow.log_param("n_samples_train", X_train.shape[0])
+print(f"Tamanho da Base Histórica para Treinar: {len(df_historico)} pedidos")
+print(f"Tamanho da Base EM ANALISE para Prever: {len(df_futuro_analise)} pedidos\n")
 
-        mlflow.set_tag("model_type", "classification")
-        mlflow.set_tag("framework", model_class.__module__.split(".")[0])
-        mlflow.set_tag("owner", "grupo-XX")
-        mlflow.set_tag("phase", "datathon-fase05")
+X_historico = df_historico[colunas_preditoras].copy()
+y_historico = df_historico[alvo]
 
-        model = model_class(**model_params)
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
+X_historico = pd.get_dummies(X_historico, columns=['cd_procedimento'])
 
-        metrics = {
-            "auc": roc_auc_score(y_test, y_pred),
-            "precision": precision_score(y_test, y_pred, zero_division=0),
-            "recall": recall_score(y_test, y_pred, zero_division=0),
-            "f1": f1_score(y_test, y_pred, zero_division=0),
-        }
-        mlflow.log_metrics(metrics)
-        mlflow.sklearn.log_model(model, "model")
+X_treino, X_teste, y_treino, y_teste = train_test_split(
+    X_historico, y_historico, test_size=0.2, random_state=42
+)
 
-        logger.info(
-            "Modelo %s treinado: AUC=%.4f, F1=%.4f",
-            model_name,
-            metrics["auc"],
-            metrics["f1"],
-        )
-        return str(run.info.run_id)
+mlflow.set_tracking_uri(f"sqlite:///{caminho_base}/mlflow.db")
+mlflow.set_experiment("Previsor_de_Glosas")
+
+parametros_rf = {"n_estimators": 100, "random_state": 42}
+
+##mlflow
+
+with mlflow.start_run(run_name="RandomForest_Glosas_v1") as run:
+    mlflow.log_params(parametros_rf)
+    
+    modelo = RandomForestRegressor(**parametros_rf)
+    modelo.fit(X_treino, y_treino)
+
+    previsoes_teste = modelo.predict(X_teste)
+    mae = mean_absolute_error(y_teste, previsoes_teste)
+    
+    mlflow.log_metric("MAE", mae)
+    mlflow.sklearn.log_model(modelo, "modelo_glosa")
+    
+    print(f"Desempenho no Histórico (O quão bem ele está lembrando) -> MAE: R$ {mae:.2f}")
+    print(f"🔗 MLflow Run ID salvo: {run.info.run_id}")
+
+# Preparando a base que queremos adivinhar o futuro:
+X_futuro = df_futuro_analise[colunas_preditoras].copy()
+X_futuro = pd.get_dummies(X_futuro, columns=['cd_procedimento'])
+
+X_futuro = X_futuro.reindex(columns=X_historico.columns, fill_value=0)
+
+df_futuro_analise.loc[:, 'PREVISAO_GLOSA_PELO_IA'] = modelo.predict(X_futuro)
+
+df_futuro_analise.loc[:, 'vl_previsao'] = modelo.predict(X_futuro).round(2)
+
+print("\n--- PREVIEW DA FILA 'EM ANÁLISE' COM O JULGAMENTO DA NOSSA IA ---")
+
+# -------------------------------------------------------------
+# 6. EXPORTANDO O MODELO PARA A API (COM SKOPS)
+# -------------------------------------------------------------
+
+caminho_salvar_modelo = Path(__file__).resolve().parent / "modelo_glosa.skops"
+caminho_salvar_features = Path(__file__).resolve().parent / "features_modelo.json"
+
+sio.dump(modelo, caminho_salvar_modelo)
+
+with open(caminho_salvar_features, 'w', encoding='utf-8') as f:
+    json.dump(list(X_historico.columns), f)
+
+print(f"\n🛡️ Modelo salvo com Skops em: {caminho_salvar_modelo}")
+print(f"📦 Features salvas com JSON em: {caminho_salvar_features}")

@@ -22,3 +22,5 @@ ruff
 mypy
 bandit
 dvc
+seaborn
+skops

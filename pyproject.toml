@@ -3,7 +3,7 @@ name = "datathon-fase05"
 version = "0.1.0"
 description = "Datathon Fase 05 - MLOps, LLMs e Agentes"
 authors = [
-    { name = "Grupo XX", email = "grupo@exemplo.com" }
+    { name = "Grupo XX", email = "gabrielsalla@hotmail.com" }
 ]
 dependencies = [
     "scikit-learn",
@@ -18,7 +18,9 @@ dependencies = [
     "pandera",
     "presidio-analyzer",
     "presidio-anonymizer",
-    "openai"
+    "openai",
+    "seaborn",
+    "skops"
 ]
 requires-python = ">=3.10"
 
