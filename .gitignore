@@ -1,0 +1,12 @@
+# Ambientes virtuais
+ambi/
+# Arquivos que você ignorou
+ambi.txt
+
+# Corrigido o nome do arquivo que provavelmente queria ignorar
+Datathon - fase.txt.txt
+
+# Arquivos comuns de Python que devem ser ignorados
+__pycache__/
+*.pyc
+.ipynb_checkpoints/

@@ -1,0 +1,24 @@
+# Datathon Fase 05 - Dependências
+
+# --- Bibliotecas Base ---
+scikit-learn
+pandas
+mlflow
+fastapi
+uvicorn
+langchain
+langchain-community
+ragas
+evidently
+pandera
+presidio-analyzer
+presidio-anonymizer
+openai
+
+# --- Bibliotecas de Desenvolvimento e Qualidade ---
+pytest
+pytest-cov
+ruff
+mypy
+bandit
+dvc

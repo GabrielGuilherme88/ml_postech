@@ -1,0 +1,45 @@
+[project]
+name = "datathon-fase05"
+version = "0.1.0"
+description = "Datathon Fase 05 - MLOps, LLMs e Agentes"
+authors = [
+    { name = "Grupo XX", email = "grupo@exemplo.com" }
+]
+dependencies = [
+    "scikit-learn",
+    "pandas",
+    "mlflow",
+    "fastapi",
+    "uvicorn",
+    "langchain",
+    "langchain-community",
+    "ragas",
+    "evidently",
+    "pandera",
+    "presidio-analyzer",
+    "presidio-anonymizer",
+    "openai"
+]
+requires-python = ">=3.10"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "bandit",
+    "dvc"
+]
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.mypy]
+ignore_missing_imports = true
+strict = true
