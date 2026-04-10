@@ -14,7 +14,9 @@ openai
 seaborn
 skops
 langgraph
-langchain-google-genai
+torch
+transformers
+accelerate
 
 [dev]
 pytest

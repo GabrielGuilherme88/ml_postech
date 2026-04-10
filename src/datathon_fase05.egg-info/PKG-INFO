@@ -20,7 +20,9 @@ Requires-Dist: openai
 Requires-Dist: seaborn
 Requires-Dist: skops
 Requires-Dist: langgraph
-Requires-Dist: langchain-google-genai
+Requires-Dist: torch
+Requires-Dist: transformers
+Requires-Dist: accelerate
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: pytest-cov; extra == "dev"

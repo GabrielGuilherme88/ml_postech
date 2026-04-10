@@ -1,30 +1,29 @@
-# Datathon Fase 05 - Dependências
+# Datathon Fase 05 - Dependências de Produção
+# Nota: Este arquivo é sincronizado com o pyproject.toml
 
-# --- Bibliotecas Base ---
-scikit-learn
-pandas
-mlflow
+a2wsgi
+accelerate
+datasets
+evidently
 fastapi
-uvicorn
 langchain
 langchain-community
-ragas
-evidently
+langchain-openai
+langgraph
+mlflow
+openai
+pandas
 pandera
 presidio-analyzer
 presidio-anonymizer
-openai
-
-# --- Bibliotecas de Desenvolvimento e Qualidade ---
-pytest
-pytest-cov
-ruff
-mypy
-bandit
-dvc
-langgraph
-torch
-transformers
-accelerate
+python-dotenv
+ragas
+scikit-learn
 seaborn
 skops
+torch
+transformers
+uvicorn
+
+# Instala o projeto local em modo editável
+-e .

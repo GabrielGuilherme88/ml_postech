@@ -6,25 +6,29 @@ authors = [
     { name = "Grupo XX", email = "gabrielsalla@hotmail.com" }
 ]
 dependencies = [
-    "scikit-learn",
-    "pandas",
-    "mlflow",
+    "a2wsgi",
+    "accelerate",
+    "datasets",
+    "evidently",
     "fastapi",
-    "uvicorn",
     "langchain",
     "langchain-community",
-    "ragas",
-    "evidently",
+    "langchain-openai",
+    "langgraph",
+    "mlflow",
+    "openai",
+    "pandas",
     "pandera",
     "presidio-analyzer",
     "presidio-anonymizer",
-    "openai",
+    "python-dotenv",
+    "ragas",
+    "scikit-learn",
     "seaborn",
     "skops",
-    "langgraph",
     "torch",
     "transformers",
-    "accelerate"
+    "uvicorn"
 ]
 requires-python = ">=3.10"
 
@@ -35,7 +39,8 @@ dev = [
     "ruff",
     "mypy",
     "bandit",
-    "dvc"
+    "dvc",
+    "httpx"
 ]
 
 [build-system]

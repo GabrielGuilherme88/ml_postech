@@ -3,13 +3,13 @@
 PYTHON = ambi/bin/python
 
 install:
-	pip install -e ".[dev]"
+	$(PYTHON) -m pip install -e ".[dev]"
 
 train:
 	python -m src.models.train
 
 serve:
-	uvicorn src.serving.app:app --reload
+	PYTHONPATH=. $(PYTHON) app/app.py
 
 test:
 	pytest tests/ --cov=src

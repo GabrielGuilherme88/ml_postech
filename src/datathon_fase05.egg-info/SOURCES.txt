@@ -10,4 +10,4 @@ src/models/insert_db_model.py
 src/models/mlflow_utils.py
 src/models/train.py
 src/security/guardrails.py
-tests/test_features.py
+tests/test_agent.py

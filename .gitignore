@@ -17,3 +17,7 @@ mlruns/
 *.skops
 build/
 *.csv
+.env
+
+# Distribuição / Empacotamento
+*.egg-info/
