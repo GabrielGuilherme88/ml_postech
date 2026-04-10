@@ -1,0 +1,30 @@
+Metadata-Version: 2.4
+Name: datathon-fase05
+Version: 0.1.0
+Summary: Datathon Fase 05 - MLOps, LLMs e Agentes
+Author-email: Grupo XX <gabrielsalla@hotmail.com>
+Requires-Python: >=3.10
+Requires-Dist: scikit-learn
+Requires-Dist: pandas
+Requires-Dist: mlflow
+Requires-Dist: fastapi
+Requires-Dist: uvicorn
+Requires-Dist: langchain
+Requires-Dist: langchain-community
+Requires-Dist: ragas
+Requires-Dist: evidently
+Requires-Dist: pandera
+Requires-Dist: presidio-analyzer
+Requires-Dist: presidio-anonymizer
+Requires-Dist: openai
+Requires-Dist: seaborn
+Requires-Dist: skops
+Requires-Dist: langgraph
+Requires-Dist: langchain-google-genai
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Requires-Dist: ruff; extra == "dev"
+Requires-Dist: mypy; extra == "dev"
+Requires-Dist: bandit; extra == "dev"
+Requires-Dist: dvc; extra == "dev"

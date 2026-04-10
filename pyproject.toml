@@ -20,7 +20,11 @@ dependencies = [
     "presidio-anonymizer",
     "openai",
     "seaborn",
-    "skops"
+    "skops",
+    "langgraph",
+    "torch",
+    "transformers",
+    "accelerate"
 ]
 requires-python = ">=3.10"
 

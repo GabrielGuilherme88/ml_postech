@@ -1,6 +1,3 @@
-# Datathon Fase 05 - Dependências
-
-# --- Bibliotecas Base ---
 scikit-learn
 pandas
 mlflow
@@ -14,17 +11,15 @@ pandera
 presidio-analyzer
 presidio-anonymizer
 openai
+seaborn
+skops
+langgraph
+langchain-google-genai
 
-# --- Bibliotecas de Desenvolvimento e Qualidade ---
+[dev]
 pytest
 pytest-cov
 ruff
 mypy
 bandit
 dvc
-langgraph
-torch
-transformers
-accelerate
-seaborn
-skops

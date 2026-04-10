@@ -2,15 +2,17 @@ import pandas as pd
 from pathlib import Path
 import skops.io as sio
 import json
-import mlflow
-import mlflow.sklearn
+from mlflow_utils import setup_mlflow, log_training
+import sqlite3
 
 caminho_base = Path(__file__).resolve().parents[2]
-caminho_arquivo = caminho_base / "build" / "raw" / "dados_reembolso_hipoteticos.csv"
+caminho_db = caminho_base / "db_lite" / "meu_banco_de_dados.db"
 
-print(f"Buscando arquivo em: {caminho_arquivo}")
+print(f"Buscando dados no banco de dados em: {caminho_db}")
 
-df = pd.read_csv(caminho_arquivo, sep=';')
+conn = sqlite3.connect(caminho_db)
+df = pd.read_sql("SELECT * FROM pedidos_reembolso", conn)
+conn.close()
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
@@ -37,27 +39,24 @@ X_treino, X_teste, y_treino, y_teste = train_test_split(
     X_historico, y_historico, test_size=0.2, random_state=42
 )
 
-mlflow.set_tracking_uri(f"sqlite:///{caminho_base}/mlflow.db")
-mlflow.set_experiment("Previsor_de_Glosas")
+setup_mlflow()
 
 parametros_rf = {"n_estimators": 100, "random_state": 42}
 
-##mlflow
+modelo = RandomForestRegressor(**parametros_rf)
+modelo.fit(X_treino, y_treino)
 
-with mlflow.start_run(run_name="RandomForest_Glosas_v1") as run:
-    mlflow.log_params(parametros_rf)
-    
-    modelo = RandomForestRegressor(**parametros_rf)
-    modelo.fit(X_treino, y_treino)
+previsoes_teste = modelo.predict(X_teste)
+mae = mean_absolute_error(y_teste, previsoes_teste)
 
-    previsoes_teste = modelo.predict(X_teste)
-    mae = mean_absolute_error(y_teste, previsoes_teste)
-    
-    mlflow.log_metric("MAE", mae)
-    mlflow.sklearn.log_model(modelo, "modelo_glosa")
-    
-    print(f"Desempenho no Histórico (O quão bem ele está lembrando) -> MAE: R$ {mae:.2f}")
-    print(f"🔗 MLflow Run ID salvo: {run.info.run_id}")
+# Log via utilitário separado
+log_training(
+    modelo=modelo,
+    parametros=parametros_rf,
+    metricas={"MAE": mae}
+)
+
+print(f"Desempenho no Histórico (O quão bem ele está lembrando) -> MAE: R$ {mae:.2f}")
 
 # Preparando a base que queremos adivinhar o futuro:
 X_futuro = df_futuro_analise[colunas_preditoras].copy()

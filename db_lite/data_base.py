@@ -103,11 +103,23 @@ def generate_mock_data(n=100):
         data.append(row)
     
     df = pd.DataFrame(data)
-    # Salvando em TXT separado por ';' (CSV style) na mesma pasta do script
-    dir_path = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(dir_path, 'dados_reembolso_hipoteticos.csv')
-    df.to_csv(file_path, sep=';', index=False, encoding='utf-8')
-    print(f"Arquivo gerado com sucesso em:\n{file_path}")
+    return df
 
-# Executar a função
-generate_mock_data(100)
+if __name__ == "__main__":
+    import sqlite3
+    df = generate_mock_data(100)
+    
+    dir_path = os.path.dirname(os.path.abspath(__file__))
+    # Como o data_base.py agora foi movido para a própria pasta db_lite, o bd fica na mesma pasta!
+    db_path = os.path.join(dir_path, 'meu_banco_de_dados.db')
+    db_path = os.path.abspath(db_path)
+    
+    # Garante que o diretório db_lite existe
+    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    
+    conn = sqlite3.connect(db_path)
+    # Salvar na base (usando append para apenas adicionar aos dados criados pela estrutura inicial)
+    df.to_sql('pedidos_reembolso', conn, if_exists='append', index=False)
+    conn.close()
+    
+    print(f"100 Arquivos hipoteticos gerados e inseridos com sucesso na tabela pedidos_reembolso em:\n{db_path}")
