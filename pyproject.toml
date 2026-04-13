@@ -1,7 +1,7 @@
 [project]
 name = "datathon-fase05"
-version = "0.1.0"
-description = "Datathon Fase 05 - MLOps, LLMs e Agentes"
+version = "0.2.0"
+description = "Datathon Fase 05 - Auditoria de Saúde com MLOps, RAGAS e Guardrails"
 authors = [
     { name = "Grupo XX", email = "gabrielsalla@hotmail.com" }
 ]
@@ -28,7 +28,8 @@ dependencies = [
     "skops",
     "torch",
     "transformers",
-    "uvicorn"
+    "uvicorn",
+    "structlog"
 ]
 requires-python = ">=3.10"
 

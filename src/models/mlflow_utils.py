@@ -10,15 +10,11 @@ def setup_mlflow():
     mlflow.set_tracking_uri(f"sqlite:///{db_path}")
     mlflow.set_experiment("Previsor_de_Glosas")
 
-def log_training(modelo, parametros, metricas, nome_run="RandomForest_Glosas_v1"):
+from mlflow.models.signature import infer_signature
+
+def log_training(modelo, parametros, metricas, X_train, nome_run="RandomForest_Glosas_v1"):
     """
     Registra os dados do treinamento no MLflow.
-    
-    Args:
-        modelo: O modelo treinado.
-        parametros (dict): Dicionário com os hiperparâmetros.
-        metricas (dict): Dicionário com as métricas de performance.
-        nome_run (str): Nome identificador da execução.
     """
     with mlflow.start_run(run_name=nome_run) as run:
         # Log de parâmetros
@@ -28,8 +24,20 @@ def log_training(modelo, parametros, metricas, nome_run="RandomForest_Glosas_v1"
         for nome_metrica, valor in metricas.items():
             mlflow.log_metric(nome_metrica, valor)
         
-        # Log do modelo
-        mlflow.sklearn.log_model(modelo, "modelo_glosa")
+        # Inferindo assinatura do modelo
+        signature = infer_signature(X_train, modelo.predict(X_train))
         
+        # Log do modelo com assinatura e exemplo
+        mlflow.sklearn.log_model(
+            sk_model=modelo,
+            artifact_path="modelo_glosa",
+            signature=signature,
+            input_example=X_train.iloc[:5]
+        )
+        
+        # Log de tags úteis
+        mlflow.set_tag("model_type", "RandomForest")
+        mlflow.set_tag("version", "0.1.0")
+
         print(f"🔗 MLflow Run ID salvo: {run.info.run_id}")
         return run.info.run_id

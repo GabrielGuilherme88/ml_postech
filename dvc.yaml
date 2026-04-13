@@ -1,15 +1,33 @@
 stages:
-  feature_engineering:
-    cmd: python -m src.features.feature_engineering
+  prepare_data:
+    cmd: ambi/bin/python db_lite/create_db.py && ambi/bin/python db_lite/data_base.py
     deps:
-      - data/raw
-      - src/features/feature_engineering.py
+      - db_lite/create_db.py
+      - db_lite/data_base.py
     outs:
-      - data/processed
+      - db_lite/meu_banco_de_dados.db
+
   train:
-    cmd: python -m src.models.train
+    cmd: ambi/bin/python src/models/train.py
     deps:
-      - data/processed
+      - db_lite/meu_banco_de_dados.db
       - src/models/train.py
-    params:
-      - configs/model_config.yaml:
+    outs:
+      - src/models/modelo_glosa.skops
+      - src/models/features_modelo.json
+
+  inference:
+    cmd: ambi/bin/python src/models/insert_db_model.py
+    deps:
+      - src/models/modelo_glosa.skops
+      - src/models/features_modelo.json
+      - src/models/insert_db_model.py
+      - db_lite/meu_banco_de_dados.db
+
+  evaluate:
+    cmd: ambi/bin/python evaluation/ragas_eval.py
+    deps:
+      - evaluation/ragas_eval.py
+      - data/golden_set/golden_set.json
+      - db_lite/meu_banco_de_dados.db
+

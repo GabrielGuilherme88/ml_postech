@@ -1,0 +1,10 @@
+# Makefile exclusivo para o teste do guardrails
+
+PYTHON = ambi/bin/python
+
+.PHONY: test
+
+test:
+	@echo "🛡️ Rodando testes exclusivos de Guardrails..."
+	$(PYTHON) -m pytest tests/test_guardrails_unit.py
+	@echo "✅ Testes de Guardrails concluídos!"

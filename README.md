@@ -36,8 +36,10 @@ ml_postech/
 ├── configs/              # Arquivos YAML de configuração de modelos e monitoramento
 ├── docs/                 # Model Cards, System Cards e documentação de segurança
 ├── Makefile              # Comandos de atalho (make train, make serve, make test)
+├── Makefile.guardrails   # Testes exclusivos de segurança e guardrails
 ├── pyproject.toml        # Definição do projeto e dependências (uv/pip)
 ├── dvc.yaml              # Definição do pipeline de dados e reprodutibilidade
+├── docs/                 # Documentação de Governança (LGPD, OWASP, System Card)
 └── tarefas_datathon.md   # Guia de progresso e checklist de entrega
 ```
 
@@ -65,12 +67,17 @@ ml_postech/
    make pipeline
    ```
 3. **Execute os testes**:
-   ```bash
-   make test
-   ```
+   - Para testes gerais do modelo:
+     ```bash
+     make test
+     ```
+   - Para avaliação técnica RAG (RAGAS):
+     ```bash
+     make eval
+     ```
 4. **Inicie a API**:
    ```bash
-   python app/app.py
+   make serve
    ```
 
 ---

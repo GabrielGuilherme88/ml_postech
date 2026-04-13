@@ -2,8 +2,11 @@ import pandas as pd
 from pathlib import Path
 import skops.io as sio
 import json
-from mlflow_utils import setup_mlflow, log_training
 import sqlite3
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_absolute_error
+from mlflow_utils import setup_mlflow, log_training
 
 caminho_base = Path(__file__).resolve().parents[2]
 caminho_db = caminho_base / "db_lite" / "meu_banco_de_dados.db"
@@ -13,11 +16,6 @@ print(f"Buscando dados no banco de dados em: {caminho_db}")
 conn = sqlite3.connect(caminho_db)
 df = pd.read_sql("SELECT * FROM pedidos_reembolso", conn)
 conn.close()
-
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error
-import pandas as pd
 
 # 1. Expandindo nossas Variáveis Preditivas (X) e nosso Alvo (y)
 colunas_preditoras = ['cd_procedimento', 'vl_informado', 'qt_informado', 'cd_tipoproduto']
@@ -53,7 +51,8 @@ mae = mean_absolute_error(y_teste, previsoes_teste)
 log_training(
     modelo=modelo,
     parametros=parametros_rf,
-    metricas={"MAE": mae}
+    metricas={"MAE": mae},
+    X_train=X_treino
 )
 
 print(f"Desempenho no Histórico (O quão bem ele está lembrando) -> MAE: R$ {mae:.2f}")

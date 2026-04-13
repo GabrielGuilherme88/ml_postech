@@ -12,10 +12,18 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, AsyncGenerator
+import structlog
+
+logger = structlog.get_logger()
 
 import os
 import torch
+import asyncio
 from transformers import AutoTokenizer, AutoModelForCausalLM
+from src.security.guardrails import OutputGuardrail
+
+# Inicialização do Guardrail de Output
+output_guardrail = OutputGuardrail()
 
 # Permite carregar modelos no formato .bin legado (necessário para LiteLlama-460M)
 # O CVE-2025-32434 é mitigado aqui pois estamos carregando de fonte conhecida e confiável
@@ -38,6 +46,7 @@ class AgentResult:
     """Resultado completo de uma execução do agente."""
     output: str
     tools_used: list[str]
+    context: list[str]
     token_count: int
     step_count: int
     duration_ms: int
@@ -221,19 +230,30 @@ async def run(message: str) -> AgentResult:
     start_time = time.monotonic()
     tools_used: list[str] = []
 
+    log = logger.bind(message=message)
+    
     # 1. Monta e executa a query
     sql = _build_sql_from_question(message)
+    log.info("query_generation", sql=sql)
+    
     tools_used.append("search_reimbursement_data")
     data = _query_db(sql)
+    log.info("db_query_completed", data_length=len(data))
 
-    # 2. Gera resposta com o LiteLlama
-    output = _generate_response(message, data)
+    # 2. Gera resposta com o LiteLlama (roda em thread separada para não travar o loop)
+    log.info("llm_generation_start")
+    output_raw = await asyncio.to_thread(_generate_response, message, data)
+    log.info("llm_generation_completed")
+
+    # 3. Sanitização de Output (Guardrails)
+    output = output_guardrail.sanitize(output_raw)
 
     duration_ms = int((time.monotonic() - start_time) * 1000)
 
     return AgentResult(
         output=output,
         tools_used=tools_used,
+        context=[data],
         token_count=0,  # Não disponível via transformers direto
         step_count=2,   # Consulta DB + Geração LLM
         duration_ms=duration_ms,
@@ -265,6 +285,7 @@ async def run_stream(message: str) -> AsyncGenerator[AgentEvent, None]:
             "result": AgentResult(
                 output=output,
                 tools_used=["search_reimbursement_data"],
+                context=[data],
                 token_count=0,
                 step_count=2,
                 duration_ms=duration_ms,

@@ -4,25 +4,30 @@ Version: 0.1.0
 Summary: Datathon Fase 05 - MLOps, LLMs e Agentes
 Author-email: Grupo XX <gabrielsalla@hotmail.com>
 Requires-Python: >=3.10
-Requires-Dist: scikit-learn
-Requires-Dist: pandas
-Requires-Dist: mlflow
+Requires-Dist: a2wsgi
+Requires-Dist: accelerate
+Requires-Dist: datasets
+Requires-Dist: evidently
 Requires-Dist: fastapi
-Requires-Dist: uvicorn
 Requires-Dist: langchain
 Requires-Dist: langchain-community
-Requires-Dist: ragas
-Requires-Dist: evidently
+Requires-Dist: langchain-openai
+Requires-Dist: langgraph
+Requires-Dist: mlflow
+Requires-Dist: openai
+Requires-Dist: pandas
 Requires-Dist: pandera
 Requires-Dist: presidio-analyzer
 Requires-Dist: presidio-anonymizer
-Requires-Dist: openai
+Requires-Dist: python-dotenv
+Requires-Dist: ragas
+Requires-Dist: scikit-learn
 Requires-Dist: seaborn
 Requires-Dist: skops
-Requires-Dist: langgraph
 Requires-Dist: torch
 Requires-Dist: transformers
-Requires-Dist: accelerate
+Requires-Dist: uvicorn
+Requires-Dist: structlog
 Provides-Extra: dev
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: pytest-cov; extra == "dev"
@@ -30,3 +35,4 @@ Requires-Dist: ruff; extra == "dev"
 Requires-Dist: mypy; extra == "dev"
 Requires-Dist: bandit; extra == "dev"
 Requires-Dist: dvc; extra == "dev"
+Requires-Dist: httpx; extra == "dev"

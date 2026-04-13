@@ -1,0 +1,58 @@
+schema: '2.0'
+stages:
+  prepare_data:
+    cmd: ambi/bin/python db_lite/create_db.py && ambi/bin/python 
+      db_lite/data_base.py
+    deps:
+    - path: db_lite/create_db.py
+      hash: md5
+      md5: d6dc870e21698c3a34b4b2dea1540eb9
+      size: 1620
+    - path: db_lite/data_base.py
+      hash: md5
+      md5: 032c48038d2c275285adfd399cea0724
+      size: 5896
+    outs:
+    - path: db_lite/meu_banco_de_dados.db
+      hash: md5
+      md5: d1cab65a854cfb11fa80123489e7765f
+      size: 761856
+  train:
+    cmd: ambi/bin/python src/models/train.py
+    deps:
+    - path: db_lite/meu_banco_de_dados.db
+      hash: md5
+      md5: 2b2287513052dcec4039aeadeac3f63d
+      size: 761856
+    - path: src/models/train.py
+      hash: md5
+      md5: fcc4d8dd9afd7f181c1b47931ce3f1d0
+      size: 3023
+    outs:
+    - path: src/models/features_modelo.json
+      hash: md5
+      md5: 3697a85e2bc767aa02d27885f17176f6
+      size: 1670
+    - path: src/models/modelo_glosa.skops
+      hash: md5
+      md5: 913e9aa21f05742febf322223a52e806
+      size: 1974331
+  inference:
+    cmd: ambi/bin/python src/models/insert_db_model.py
+    deps:
+    - path: db_lite/meu_banco_de_dados.db
+      hash: md5
+      md5: 33cb6c60c20d0fe2131b553fec58dee4
+      size: 794624
+    - path: src/models/features_modelo.json
+      hash: md5
+      md5: 3697a85e2bc767aa02d27885f17176f6
+      size: 1670
+    - path: src/models/insert_db_model.py
+      hash: md5
+      md5: 73db104f8c5fba53a0d6febdde906bb3
+      size: 2044
+    - path: src/models/modelo_glosa.skops
+      hash: md5
+      md5: 913e9aa21f05742febf322223a52e806
+      size: 1974331

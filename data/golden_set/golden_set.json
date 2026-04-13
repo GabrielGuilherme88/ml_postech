@@ -1,0 +1,102 @@
+[
+  {
+    "query": "Qual o total de glosas previsto para a Empresa Alfa LTDA?",
+    "expected_answer": "O total de glosas previsto para a Empresa Alfa LTDA é calculado somando os valores da coluna 'PREVISAO_GLOSA_PELO_IA' para todos os seus registros no banco.",
+    "contexts": []
+  },
+  {
+    "query": "Quais são as empresas atendidas pela Ana?",
+    "expected_answer": "As empresas atendidas pela Ana incluem Empresa Alfa LTDA, Beta Tech S.A. e Gamma Servicos.",
+    "contexts": []
+  },
+  {
+    "query": "Qual o valor médio das glosas previstas?",
+    "expected_answer": "O valor médio das glosas previstas é a média da coluna PREVISAO_GLOSA_PELO_IA agrupada por empresa ou globalmente.",
+    "contexts": []
+  },
+  {
+    "query": "Quais os pedidos com as maiores glosas previstas?",
+    "expected_answer": "Os pedidos com as maiores glosas previstas são os que possuem os maiores valores na coluna PREVISAO_GLOSA_PELO_IA.",
+    "contexts": []
+  },
+  {
+    "query": "Como a Ana calcula a previsão de glosa?",
+    "expected_answer": "A Ana utiliza um modelo de Machine Learning (Random Forest) treinado com dados históricos para prever o valor da glosa.",
+    "contexts": []
+  },
+  {
+    "query": "Qual o resumo das glosas para a Beta Tech S.A.?",
+    "expected_answer": "O resumo para a Beta Tech S.A. inclui a quantidade de pedidos, a média do valor solicitado e o total de glosas previsto.",
+    "contexts": []
+  },
+  {
+    "query": "Existem pedidos com glosa prevista acima de R$ 1000?",
+    "expected_answer": "Isso depende dos dados atuais no banco. A Ana consulta a tabela db_model para identificar registros com PREVISAO_GLOSA_PELO_IA > 1000.",
+    "contexts": []
+  },
+  {
+    "query": "Quem é o beneficiário com o maior valor solicitado na Gamma Servicos?",
+    "expected_answer": "A Ana realiza uma consulta filtrando por nm_empresa = 'Gamma Servicos' e ordenando por vl_informado DESC.",
+    "contexts": []
+  },
+  {
+    "query": "O que a Ana faz?",
+    "expected_answer": "A Ana é uma auditora de saúde baseada em IA que prevê e analisa glosas médicas.",
+    "contexts": []
+  },
+  {
+    "query": "Qual o total de pedidos em análise?",
+    "expected_answer": "O total de pedidos em análise é a contagem de registros na tabela db_model.",
+    "contexts": []
+  },
+  {
+    "query": "Quais procedimentos médicos estão presentes na base?",
+    "expected_answer": "O sistema analisa diversos procedimentos identificados pelo campo cd_procedimento, como consultas e exames.",
+    "contexts": []
+  },
+  {
+    "query": "Como posso ver o desempenho do modelo no MLflow?",
+    "expected_answer": "Você pode acessar o dashboard do MLflow na rota /mlflow/ para ver métricas como o MAE.",
+    "contexts": []
+  },
+  {
+    "query": "A Ana usa dados externos para responder?",
+    "expected_answer": "Não, toda a análise é feita localmente no banco de dados db_lite e com o modelo LiteLlama local.",
+    "contexts": []
+  },
+  {
+    "query": "Qual o percentual médio de glosa em relação ao valor informado?",
+    "expected_answer": "O percentual médio de glosa é a razão entre a soma de PREVISAO_GLOSA_PELO_IA e a soma de vl_informado.",
+    "contexts": []
+  },
+  {
+    "query": "A Ana detecta dados sensíveis?",
+    "expected_answer": "Sim, a Ana utiliza guardrails com Microsoft Presidio para anonimizar dados como nomes e CPFs no output.",
+    "contexts": []
+  },
+  {
+    "query": "Quantos registros estão na tabela db_model?",
+    "expected_answer": "O sistema conta o número total de linhas na tabela db_model para responder.",
+    "contexts": []
+  },
+  {
+    "query": "Qual o valor total informado para a Empresa Alfa?",
+    "expected_answer": "É a soma da coluna vl_informado filtrando pela Empresa Alfa.",
+    "contexts": []
+  },
+  {
+    "query": "Quais prestadores de serviço mais atendem a Beta Tech?",
+    "expected_answer": "São os prestadores (nm_prestador) com maior contagem de registros vinculados à Beta Tech S.A.",
+    "contexts": []
+  },
+  {
+    "query": "Posso confiar 100% no valor previsto?",
+    "expected_answer": "A previsão é estatística baseada em histórico; deve servir como apoio à auditoria humana.",
+    "contexts": []
+  },
+  {
+    "query": "Qual o objetivo deste projeto?",
+    "expected_answer": "O objetivo é automatizar e dar inteligência à auditoria de reembolso médico para a Fase 05 do Datathon.",
+    "contexts": []
+  }
+]

@@ -1,4 +1,8 @@
-.PHONY: install train serve test lint data pipeline
+.PHONY: install train serve test lint data pipeline eval
+
+eval:
+	PYTHONPATH=. $(PYTHON) evaluation/ragas_eval.py
+
 
 PYTHON = ambi/bin/python
 
@@ -12,23 +16,17 @@ serve:
 	PYTHONPATH=. $(PYTHON) app/app.py
 
 test:
-	pytest tests/ --cov=src
+	pytest tests/ --ignore=tests/test_guardrails_unit.py --cov=src
 
 lint:
-	ruff check src/ tests/ evaluation/
-	mypy src/ --ignore-missing-imports
-	bandit -r src/ -c pyproject.toml
+	ambi/bin/ruff check .
+	ambi/bin/mypy . --ignore-missing-imports
+	ambi/bin/bandit -r src/ -c pyproject.toml
 
 data:
 	mkdir -p data/raw data/processed data/golden_set
 
 pipeline:
-	@echo "🔄 Inicializando banco e resetando a tabela..."
-	$(PYTHON) db_lite/create_db.py
-	@echo "📊 Abastecendo base com 100 dados simulados..."
-	$(PYTHON) db_lite/data_base.py
-	@echo "🤖 Treinando modelo Random Forest..."
-	$(PYTHON) src/models/train.py
-	@echo "🔮 Prevendo 'EM ANALISE' e exportando para db_model..."
-	$(PYTHON) src/models/insert_db_model.py
-	@echo "✅ Pipeline ML concluido!"
+	@echo "🔄 Running DVC pipeline..."
+	ambi/bin/dvc repro
+	@echo "✅ Pipeline ML concluído!"

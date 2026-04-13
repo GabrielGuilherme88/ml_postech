@@ -41,11 +41,16 @@ class OutputGuardrail:
         self.language = language
 
     def sanitize(self, llm_output: str) -> str:
-        results = self.analyzer.analyze(
-            text=llm_output,
-            language=self.language,
-            entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "BR_CPF"],
-        )
+        try:
+            results = self.analyzer.analyze(
+                text=llm_output,
+                language=self.language,
+                entities=["PERSON", "EMAIL_ADDRESS", "PHONE_NUMBER", "BR_CPF"],
+            )
+        except Exception as e:
+            logger.error("Erro no AnalyzerEngine: %s. Pulando sanitização.", e)
+            return llm_output
+
         if results:
             logger.warning("PII detectado no output: %d entidades", len(results))
             anonymized = self.anonymizer.anonymize(
