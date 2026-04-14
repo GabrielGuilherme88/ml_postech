@@ -1,0 +1,19 @@
+cmd: ambi/bin/python src/models/train.py
+deps:
+- path: db_lite/meu_banco_de_dados.db
+  hash: md5
+  md5: d1cab65a854cfb11fa80123489e7765f
+  size: 761856
+- path: src/models/train.py
+  hash: md5
+  md5: fcc4d8dd9afd7f181c1b47931ce3f1d0
+  size: 3023
+outs:
+- path: src/models/features_modelo.json
+  hash: md5
+  md5: 3697a85e2bc767aa02d27885f17176f6
+  size: 1670
+- path: src/models/modelo_glosa.skops
+  hash: md5
+  md5: fe059d1ec05be194e5637485122afc79
+  size: 1974331

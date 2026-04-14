@@ -1,0 +1,19 @@
+cmd: python src/models/train.py
+deps:
+- path: db_lite/meu_banco_de_dados.db
+  hash: md5
+  md5: b60c4a8d067af458a8bddd85ef226445
+  size: 761856
+- path: src/models/train.py
+  hash: md5
+  md5: fcc4d8dd9afd7f181c1b47931ce3f1d0
+  size: 3023
+outs:
+- path: src/models/features_modelo.json
+  hash: md5
+  md5: 945783a0d540e79bfa1e55ee4fdab060
+  size: 1535
+- path: src/models/modelo_glosa.skops
+  hash: md5
+  md5: 2e69678c7cf44cf2cb85c62db32eb4f4
+  size: 1814291

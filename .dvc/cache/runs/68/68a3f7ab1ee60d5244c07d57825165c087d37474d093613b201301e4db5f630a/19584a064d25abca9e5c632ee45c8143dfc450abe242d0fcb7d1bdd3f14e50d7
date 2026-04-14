@@ -1,0 +1,15 @@
+cmd: python db_lite/create_db.py && python db_lite/data_base.py
+deps:
+- path: db_lite/create_db.py
+  hash: md5
+  md5: d6dc870e21698c3a34b4b2dea1540eb9
+  size: 1620
+- path: db_lite/data_base.py
+  hash: md5
+  md5: 032c48038d2c275285adfd399cea0724
+  size: 5896
+outs:
+- path: db_lite/meu_banco_de_dados.db
+  hash: md5
+  md5: 9935b08d9c98ae76fc37c382dee3ab91
+  size: 761856

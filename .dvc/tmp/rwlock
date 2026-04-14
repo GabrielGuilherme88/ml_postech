@@ -1,1 +1,1 @@
-{"write": {}}
+{"read": {"/home/pichau/Gabriel/ml_postech/evaluation/ragas_eval.py": [{"pid": 87192, "cmd": "ambi/bin/dvc repro"}], "/home/pichau/Gabriel/ml_postech/data/golden_set/golden_set.json": [{"pid": 87192, "cmd": "ambi/bin/dvc repro"}]}, "write": {}}

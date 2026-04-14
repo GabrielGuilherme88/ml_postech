@@ -1,7 +1,8 @@
 .PHONY: install train serve test lint data pipeline eval
 
 eval:
-	PYTHONPATH=. $(PYTHON) evaluation/ragas_eval.py
+	@echo "🧪 Running DVC evaluation..."
+	ambi/bin/dvc repro evaluate
 
 
 PYTHON = ambi/bin/python
@@ -28,5 +29,5 @@ data:
 
 pipeline:
 	@echo "🔄 Running DVC pipeline..."
-	ambi/bin/dvc repro
+	ambi/bin/dvc repro inference
 	@echo "✅ Pipeline ML concluído!"

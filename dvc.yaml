@@ -1,6 +1,6 @@
 stages:
   prepare_data:
-    cmd: ambi/bin/python db_lite/create_db.py && ambi/bin/python db_lite/data_base.py
+    cmd: PYTHONPATH=. ambi/bin/python db_lite/create_db.py && PYTHONPATH=. ambi/bin/python db_lite/data_base.py
     deps:
       - db_lite/create_db.py
       - db_lite/data_base.py
@@ -8,7 +8,7 @@ stages:
       - db_lite/meu_banco_de_dados.db
 
   train:
-    cmd: ambi/bin/python src/models/train.py
+    cmd: PYTHONPATH=. ambi/bin/python src/models/train.py
     deps:
       - db_lite/meu_banco_de_dados.db
       - src/models/train.py
@@ -17,7 +17,7 @@ stages:
       - src/models/features_modelo.json
 
   inference:
-    cmd: ambi/bin/python src/models/insert_db_model.py
+    cmd: PYTHONPATH=. ambi/bin/python src/models/insert_db_model.py
     deps:
       - src/models/modelo_glosa.skops
       - src/models/features_modelo.json
@@ -25,7 +25,7 @@ stages:
       - db_lite/meu_banco_de_dados.db
 
   evaluate:
-    cmd: ambi/bin/python evaluation/ragas_eval.py
+    cmd: PYTHONPATH=. ambi/bin/python evaluation/ragas_eval.py
     deps:
       - evaluation/ragas_eval.py
       - data/golden_set/golden_set.json

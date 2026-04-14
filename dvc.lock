@@ -1,8 +1,8 @@
 schema: '2.0'
 stages:
   prepare_data:
-    cmd: ambi/bin/python db_lite/create_db.py && ambi/bin/python 
-      db_lite/data_base.py
+    cmd: PYTHONPATH=. ambi/bin/python db_lite/create_db.py && PYTHONPATH=. 
+      ambi/bin/python db_lite/data_base.py
     deps:
     - path: db_lite/create_db.py
       hash: md5
@@ -15,14 +15,14 @@ stages:
     outs:
     - path: db_lite/meu_banco_de_dados.db
       hash: md5
-      md5: d1cab65a854cfb11fa80123489e7765f
+      md5: 51bacd17294b54b696444b77d92e7d7a
       size: 761856
   train:
-    cmd: ambi/bin/python src/models/train.py
+    cmd: PYTHONPATH=. ambi/bin/python src/models/train.py
     deps:
     - path: db_lite/meu_banco_de_dados.db
       hash: md5
-      md5: 2b2287513052dcec4039aeadeac3f63d
+      md5: 51bacd17294b54b696444b77d92e7d7a
       size: 761856
     - path: src/models/train.py
       hash: md5
@@ -31,28 +31,28 @@ stages:
     outs:
     - path: src/models/features_modelo.json
       hash: md5
-      md5: 3697a85e2bc767aa02d27885f17176f6
-      size: 1670
+      md5: a9ab83bcb8278ebe3e36473c18b37415
+      size: 1778
     - path: src/models/modelo_glosa.skops
       hash: md5
-      md5: 913e9aa21f05742febf322223a52e806
-      size: 1974331
+      md5: dd82752686752aac5a4ebdf5cf7ba13b
+      size: 1938048
   inference:
-    cmd: ambi/bin/python src/models/insert_db_model.py
+    cmd: PYTHONPATH=. ambi/bin/python src/models/insert_db_model.py
     deps:
     - path: db_lite/meu_banco_de_dados.db
       hash: md5
-      md5: 33cb6c60c20d0fe2131b553fec58dee4
-      size: 794624
+      md5: 7d66c2a8940257e3102c9a47538b727c
+      size: 790528
     - path: src/models/features_modelo.json
       hash: md5
-      md5: 3697a85e2bc767aa02d27885f17176f6
-      size: 1670
+      md5: a9ab83bcb8278ebe3e36473c18b37415
+      size: 1778
     - path: src/models/insert_db_model.py
       hash: md5
       md5: 73db104f8c5fba53a0d6febdde906bb3
       size: 2044
     - path: src/models/modelo_glosa.skops
       hash: md5
-      md5: 913e9aa21f05742febf322223a52e806
-      size: 1974331
+      md5: dd82752686752aac5a4ebdf5cf7ba13b
+      size: 1938048

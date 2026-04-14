@@ -1,0 +1,12 @@
+ambi/
+.git/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+mlruns/
+data/raw/
+data/processed/
+db_lite/*.db

@@ -1,13 +1,24 @@
+import os
 import mlflow
 import mlflow.sklearn
 from pathlib import Path
+from dotenv import load_dotenv
 
 def setup_mlflow():
-    """Configura a URI de tracking e o experimento do MLflow no banco de dados unificado."""
-    caminho_base = Path(__file__).resolve().parents[2]
-    # Apontando para o banco de dados principal
-    db_path = caminho_base / "db_lite" / "meu_banco_de_dados.db"
-    mlflow.set_tracking_uri(f"sqlite:///{db_path}")
+    """Configura a URI de tracking do MLflow a partir do ambiente ou fallback para SQLite."""
+    load_dotenv()
+    
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
+    
+    if tracking_uri:
+        mlflow.set_tracking_uri(tracking_uri)
+        print(f"📡 MLflow Tracking URI definida para: {tracking_uri}")
+    else:
+        caminho_base = Path(__file__).resolve().parents[2]
+        db_path = caminho_base / "db_lite" / "meu_banco_de_dados.db"
+        mlflow.set_tracking_uri(f"sqlite:///{db_path}")
+        print(f"📁 MLflow Tracking URI usando fallback SQLite: {db_path}")
+
     mlflow.set_experiment("Previsor_de_Glosas")
 
 from mlflow.models.signature import infer_signature

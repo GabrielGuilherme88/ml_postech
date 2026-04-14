@@ -56,7 +56,7 @@ ml_postech/
 
 ---
 
-## 🏁 Como Começar
+## 🏁 Como Começar (Local)
 
 1. **Instale as dependências**:
    ```bash
@@ -79,6 +79,38 @@ ml_postech/
    ```bash
    make serve
    ```
+
+---
+
+## 🐳 Execução via Docker
+
+O projeto está totalmente conteinerizado, permitindo subir a API e toda a stack de monitoramento (MLOps) de forma isolada e reprodutível.
+
+### 1. Configuração Inicial
+Certifique-se de ter o Docker instalado e o arquivo `.env` configurado:
+```bash
+cp .env.example .env  # E edite com suas chaves se necessário
+```
+
+### 2. Subir a Stack (API + Monitoramento)
+Este comando inicia a API, MLflow, Prometheus e Grafana:
+```bash
+docker compose up --build -d
+```
+
+### 3. Executar o Pipeline de Treinamento
+Para rodar o pipeline completo do DVC dentro do ambiente Docker:
+```bash
+docker compose run --rm training
+```
+
+### 4. Acessos Rápidos
+- **API**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **MLflow (Experimentos)**: [http://localhost:5000](http://localhost:5000)
+- **Grafana (Dashboards)**: [http://localhost:3000](http://localhost:3000) (admin/admin)
+- **Prometheus (Métricas)**: [http://localhost:9090](http://localhost:9090)
+
+---
 
 ---
 *Este repositório é parte integrante da avaliação da Fase 05 - Pós-Tech Machine Learning Engineering.*
