@@ -7,6 +7,20 @@ from src.agent.agentes_langgraph import agent
 import structlog
 from src.security.guardrails import InputGuardrail
 from mlflow_dash import mlflow_app
+from prometheus_fastapi_instrumentator import Instrumentator
+import os
+
+try:
+    from langfuse import Langfuse
+    langfuse = Langfuse(
+        public_key=os.getenv("LANGFUSE_PUBLIC_KEY", ""),
+        secret_key=os.getenv("LANGFUSE_SECRET_KEY", ""),
+        host=os.getenv("LANGFUSE_HOST", "http://localhost:3001")
+    )
+    LANGFUSE_ENABLED = bool(os.getenv("LANGFUSE_PUBLIC_KEY"))
+except Exception:
+    langfuse = None
+    LANGFUSE_ENABLED = False
 
 # Configuração de Logging Estruturado
 structlog.configure()
@@ -54,6 +68,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 # Montando o Dashboard do MLflow na rota /mlflow
 app.mount("/mlflow", mlflow_app)
@@ -118,20 +134,29 @@ async def ask_ana(request: QueryRequest):
     """
     log = logger.bind(question=request.question)
     
-    # 1. Validação de Input (Guardrails)
     is_safe, message = input_guardrail.validate(request.question)
     if not is_safe:
         log.warning("input_blocked", reason=message)
         raise HTTPException(status_code=400, detail=message)
 
+    if LANGFUSE_ENABLED:
+        trace = langfuse.trace(name="ask_ana")
+        trace.input({"question": request.question})
+
     try:
         log.info("processing_request")
-        # Executa o agente de forma assíncrona
         result = await agent.run(request.question)
         
         log.info("request_completed", 
                  duration_ms=result.duration_ms, 
                  tools=result.tools_used)
+
+        if LANGFUSE_ENABLED:
+            trace.output({"answer": result.output, "tools": result.tools_used})
+            trace.metrics({
+                "latency_ms": result.duration_ms,
+                "step_count": result.step_count
+            })
 
         return QueryResponse(
             answer=result.output,
@@ -141,6 +166,8 @@ async def ask_ana(request: QueryRequest):
         )
     except Exception as e:
         log.error("agent_error", error=str(e))
+        if LANGFUSE_ENABLED:
+            trace.error(str(e))
         raise HTTPException(status_code=500, detail=f"Erro interno no agente: {str(e)}")
 
 # ---------------------------------------------------------------------------

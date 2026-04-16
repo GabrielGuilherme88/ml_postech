@@ -3,11 +3,41 @@ services:
     image: ghcr.io/mlflow/mlflow:latest
     ports:
       - "5000:5000"
-    command: mlflow server --host 0.0.0.0 --backend-store-uri sqlite:////mlflow/mlflow.db --artifacts-destination /mlflow/artifacts --serve-artifacts
+    command: >
+      mlflow server --host 0.0.0.0 --backend-store-uri sqlite:////mlflow/mlflow.db --artifacts-destination /mlflow/artifacts --serve-artifacts --allowed-hosts mlflow,localhost,127.0.0.1,0.0.0.0
     volumes:
       - mlflow_data:/mlflow
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:5000/health -H 'Host: localhost' || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  training:
+    image: ana-api:latest
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: >
+      sh -c "
+        PYTHONPATH=. python db_lite/create_db.py &&
+        PYTHONPATH=. python db_lite/data_base.py &&
+        PYTHONPATH=. python src/models/train.py &&
+        PYTHONPATH=. python src/models/insert_db_model.py
+      "
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PYTHONPATH=/app
+    networks:
+      - default
 
   api:
+    image: ana-api:latest
     build:
       context: .
       dockerfile: ./src/serving/Dockerfile
@@ -19,25 +49,21 @@ services:
       - .:/app
       - hf_cache:/app/models_cache
     depends_on:
-      - mlflow
+      mlflow:
+        condition: service_healthy
+      training:
+        condition: service_completed_successfully
+      prometheus:
+        condition: service_started
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
-      - PYTHONPATH=/app # <--- ADICIONE ESTA LINHA
-
-  training:
-    build:
-      context: .
-      dockerfile: ./src/serving/Dockerfile
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-    command: dvc repro
-    profiles:
-      - training
-    environment:
-      - MLFLOW_TRACKING_URI=http://mlflow:5000
-      - PYTHONPATH=/app # <--- ADICIONE ESTA LINHA
+      - PYTHONPATH=/app
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
+      - LANGFUSE_HOST=${LANGFUSE_HOST:-http://langfuse:3001}
+      - EVIDENTLY_SERVER=${EVIDENTLY_SERVER:-http://evidently:8086}
+    networks:
+      - default
 
   prometheus:
     image: prom/prometheus:latest
@@ -45,14 +71,68 @@ services:
       - "9090:9090"
     volumes:
       - ./configs/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   grafana:
     image: grafana/grafana:latest
     ports:
       - "3000:3000"
+    volumes:
+      - ./configs/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./configs/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./configs/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_ALERTING_ENABLED=true
     depends_on:
       - prometheus
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=langfuse
+      - POSTGRES_USER=langfuse
+      - POSTGRES_PASSWORD=langfuse
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  langfuse:
+    image: langfuse/langfuse:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - DATABASE_URL=postgresql://langfuse:langfuse@postgres:5432/langfuse
+      - NEXTAUTH_SECRET=your-secret-key-change-in-production
+      - NEXTAUTH_URL=http://localhost:3001
+      - SALT=your-salt-change-in-production
+    depends_on:
+      - postgres
+
+  evidently:
+    image: evidently/evidently-service:latest
+    ports:
+      - "8086:8086"
+    volumes:
+      - ./configs/evidently:/evidently
+    command: [ "--port", "8086", "--workspace", "/evidently" ]
 
 volumes:
   hf_cache:
   mlflow_data:
+  prometheus_data:
+  grafana_data:
+  postgres_data:

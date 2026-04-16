@@ -4,8 +4,9 @@ import mlflow.sklearn
 from pathlib import Path
 from dotenv import load_dotenv
 
+import time
+
 def setup_mlflow():
-    """Configura a URI de tracking do MLflow a partir do ambiente ou fallback para SQLite."""
     load_dotenv()
     
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
@@ -19,7 +20,17 @@ def setup_mlflow():
         mlflow.set_tracking_uri(f"sqlite:///{db_path}")
         print(f"📁 MLflow Tracking URI usando fallback SQLite: {db_path}")
 
-    mlflow.set_experiment("Previsor_de_Glosas")
+    # Retry para aguardar MLflow estar pronto
+    for i in range(10):
+        try:
+            mlflow.set_experiment("Previsor_de_Glosas")
+            print("✅ Conectado ao MLflow com sucesso!")
+            return
+        except Exception as e:
+            print(f"⏳ Aguardando MLflow... tentativa {i+1}/10: {e}")
+            time.sleep(5)
+    
+    raise RuntimeError("❌ Não foi possível conectar ao MLflow após 10 tentativas")
 
 from mlflow.models.signature import infer_signature
 

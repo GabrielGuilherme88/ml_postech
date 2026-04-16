@@ -1,8 +1,8 @@
 schema: '2.0'
 stages:
   prepare_data:
-    cmd: PYTHONPATH=. ambi/bin/python db_lite/create_db.py && PYTHONPATH=. 
-      ambi/bin/python db_lite/data_base.py
+    cmd: PYTHONPATH=. python db_lite/create_db.py && PYTHONPATH=. python 
+      db_lite/data_base.py
     deps:
     - path: db_lite/create_db.py
       hash: md5
@@ -15,7 +15,7 @@ stages:
     outs:
     - path: db_lite/meu_banco_de_dados.db
       hash: md5
-      md5: 51bacd17294b54b696444b77d92e7d7a
+      md5: 8cc1636e96c786147e3ed31d7c0130c8
       size: 761856
   train:
     cmd: PYTHONPATH=. ambi/bin/python src/models/train.py
@@ -38,11 +38,11 @@ stages:
       md5: dd82752686752aac5a4ebdf5cf7ba13b
       size: 1938048
   inference:
-    cmd: PYTHONPATH=. ambi/bin/python src/models/insert_db_model.py
+    cmd: PYTHONPATH=. python src/models/insert_db_model.py
     deps:
     - path: db_lite/meu_banco_de_dados.db
       hash: md5
-      md5: 7d66c2a8940257e3102c9a47538b727c
+      md5: 142e557b1cc326017798125522f16ba7
       size: 790528
     - path: src/models/features_modelo.json
       hash: md5

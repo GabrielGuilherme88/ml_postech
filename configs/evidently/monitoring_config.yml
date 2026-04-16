@@ -1,0 +1,25 @@
+monitoring:
+  project_name: "ana-auditora"
+  references:
+    data_path: "./reference_data.csv"
+    target_column: "target"
+  alerts:
+    drift_threshold: 0.5
+    performance_threshold: 0.8
+
+drift_detection:
+  columns:
+    - name: "feature_1"
+      method: "kl_divergence"
+    - name: "feature_2"
+      method: "psi"
+    - name: "prediction"
+      method: "kl_divergence"
+
+performance:
+  metrics:
+    - accuracy
+    - precision
+    - recall
+    - f1
+    - roc_auc

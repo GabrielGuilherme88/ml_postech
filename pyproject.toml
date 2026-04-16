@@ -9,11 +9,11 @@ dependencies = [
     "a2wsgi",
     "accelerate",
     "datasets",
-    "evidently",
     "fastapi",
     "langchain",
     "langchain-community",
     "langchain-openai",
+    "langfuse",
     "langgraph",
     "mlflow",
     "openai",
@@ -21,6 +21,8 @@ dependencies = [
     "pandera",
     "presidio-analyzer",
     "presidio-anonymizer",
+    "prometheus-client",
+    "prometheus-fastapi-instrumentator",
     "python-dotenv",
     "ragas",
     "scikit-learn",
@@ -29,7 +31,8 @@ dependencies = [
     "torch",
     "transformers",
     "uvicorn",
-    "structlog"
+    "structlog",
+    "evidently==0.4.28"
 ]
 requires-python = ">=3.10"
 

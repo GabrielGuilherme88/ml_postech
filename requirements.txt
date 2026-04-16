@@ -4,16 +4,18 @@
 a2wsgi
 accelerate
 datasets
-evidently
 fastapi
 langchain
 langchain-community
 langchain-openai
+langfuse
 langgraph
 mlflow
 openai
 pandas
 pandera
+prometheus-client
+prometheus-fastapi-instrumentator
 presidio-analyzer
 presidio-anonymizer
 python-dotenv
@@ -21,9 +23,11 @@ ragas
 scikit-learn
 seaborn
 skops
+structlog
 torch
 transformers
 uvicorn
+evidently==0.4.28
 
 # Instala o projeto local em modo editável
 -e .
