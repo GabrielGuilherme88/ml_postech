@@ -1,7 +1,7 @@
 .PHONY: install train serve test lint data pipeline eval drift
 
-# Caminhos dos binários (usando venv local por padrão, mas sobrescrevíveis no Docker)
-BIN_DIR ?= ambi/bin/
+# Caminhos dos binários (vazio por padrão para usar o PATH do sistema)
+BIN_DIR ?= 
 PYTHON  ?= $(BIN_DIR)python
 DVC     ?= $(BIN_DIR)dvc
 RUFF    ?= $(BIN_DIR)ruff
