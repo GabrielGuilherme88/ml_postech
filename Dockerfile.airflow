@@ -2,16 +2,12 @@ FROM ana-api:latest
 
 USER root
 RUN apt-get update && apt-get install -y make && rm -rf /var/lib/apt/lists/*
-USER root 
 
-# Instala o Airflow e dependências de banco sobre a imagem da Ana
+# Instala o projeto com todas as dependências (incluindo as de dev como DVC)
+# E garante que o Airflow seja instalado com as restrições oficiais
 RUN pip install --no-cache-dir "apache-airflow[postgres]==2.9.0" \
-    --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.9.0/constraints-3.10.txt"
-
-RUN pip install --no-cache-dir psycopg2-binary pluggy==1.6.0
-
-# Instala o DVC
-RUN pip install --no-cache-dir dvc
+    --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.9.0/constraints-3.10.txt" && \
+    pip install --no-cache-dir -e ".[dev]"
 
 # Configurações de ambiente para o Airflow
 ENV AIRFLOW_HOME=/app/airflow
