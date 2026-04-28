@@ -1,9 +1,9 @@
 import os
 import mlflow
 import mlflow.sklearn
+from mlflow.models.signature import infer_signature
 from pathlib import Path
 from dotenv import load_dotenv
-
 import time
 
 def setup_mlflow(experiment_name="Previsor_de_Glosas"):
@@ -32,7 +32,6 @@ def setup_mlflow(experiment_name="Previsor_de_Glosas"):
     
     raise RuntimeError("❌ Não foi possível conectar ao MLflow após 10 tentativas")
 
-from mlflow.models.signature import infer_signature
 
 def log_training(modelo, parametros, metricas, X_train, nome_run="RandomForest_Glosas_v1"):
     """

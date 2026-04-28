@@ -2,7 +2,7 @@ from langfuse import Langfuse
 from langchain.callbacks.tracing_langfuse import LangfuseCallbackHandler
 from langchain_openai import ChatOpenAI
 import os
-import time
+from datetime import timedelta, datetime
 
 class LLMQualityMonitor:
     def __init__(self):
@@ -53,10 +53,8 @@ class LLMQualityMonitor:
             "faithfulness": evaluations.get("faithfulness"),
             "relevancy": evaluations.get("relevancy"),
             "hallucination": evaluations.get("hallucination"),
+            "version": "1.0.0"
         }
-
-from datetime import timedelta
-import datetime
 
 def create_llm_callback():
     monitor = LLMQualityMonitor()

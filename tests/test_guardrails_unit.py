@@ -1,4 +1,3 @@
-import pytest
 from src.security.guardrails import InputGuardrail, OutputGuardrail
 
 def test_input_guardrail_valid():

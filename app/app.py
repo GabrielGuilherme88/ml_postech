@@ -3,12 +3,35 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, Field
 from typing import List
-from src.agent.agentes_langgraph import agent
 import structlog
+import os
+import ast
+import operator
+from src.agent.agentes_langgraph import agent
 from src.security.guardrails import InputGuardrail
 from mlflow_dash import mlflow_app
 from prometheus_fastapi_instrumentator import Instrumentator
-import os
+from htm import HTML_CONTENT
+
+_SAFE_OPS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.USub: operator.neg,
+}
+_SAFE_FUNCS = {"abs": abs, "round": round}
+
+def _safe_eval(node: ast.AST):
+    if isinstance(node, ast.Constant):
+        return node.value
+    if isinstance(node, ast.BinOp):
+        return _SAFE_OPS[type(node.op)](_safe_eval(node.left), _safe_eval(node.right))
+    if isinstance(node, ast.UnaryOp):
+        return _SAFE_OPS[type(node.op)](_safe_eval(node.operand))
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in _SAFE_FUNCS:
+        return _SAFE_FUNCS[node.func.id](*[_safe_eval(a) for a in node.args])
+    raise ValueError("Expressão insegura")
 
 try:
     from langfuse import Langfuse
@@ -91,9 +114,7 @@ class QueryResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Interface Frontend (Importado de htm.py)
 # ---------------------------------------------------------------------------
-
-from htm import HTML_CONTENT
-
+# Rotas e Lógica da API
 # ---------------------------------------------------------------------------
 # Rotas
 # ---------------------------------------------------------------------------

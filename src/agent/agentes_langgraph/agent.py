@@ -6,22 +6,24 @@ Arquitetura: Consulta SQL direta + LiteLlama para resposta em linguagem natural.
 from __future__ import annotations
 
 import ast
+import asyncio
 import operator
+import os
 import sqlite3
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, AsyncGenerator
-import structlog
 
-logger = structlog.get_logger()
-
-import os
-import torch
-import asyncio
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from src.security.guardrails import OutputGuardrail
 import mlflow
+import structlog
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM
+
+from src.security.guardrails import OutputGuardrail
+
+# Configuração de Logs
+logger = structlog.get_logger()
 
 # Inicialização do Guardrail de Output
 output_guardrail = OutputGuardrail()
@@ -114,9 +116,12 @@ _SAFE_OPS = {
 _SAFE_FUNCS = {"abs": abs, "round": round, "min": min, "max": max, "sum": sum}
 
 def _safe_eval(node: ast.AST) -> Any:
-    if isinstance(node, ast.Constant): return node.value
-    if isinstance(node, ast.BinOp): return _SAFE_OPS[type(node.op)](_safe_eval(node.left), _safe_eval(node.right))
-    if isinstance(node, ast.UnaryOp): return _SAFE_OPS[type(node.op)](_safe_eval(node.operand))
+    if isinstance(node, ast.Constant):
+        return node.value
+    if isinstance(node, ast.BinOp):
+        return _SAFE_OPS[type(node.op)](_safe_eval(node.left), _safe_eval(node.right))
+    if isinstance(node, ast.UnaryOp):
+        return _SAFE_OPS[type(node.op)](_safe_eval(node.operand))
     if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id in _SAFE_FUNCS:
         return _SAFE_FUNCS[node.func.id](*[_safe_eval(a) for a in node.args])
     raise ValueError(f"Expressão não suportada: {ast.dump(node)}")
