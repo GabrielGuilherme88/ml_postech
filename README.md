@@ -44,7 +44,6 @@ docker compose up -d --build
 | **Airflow (Orquestração)** | [http://localhost:8081](http://localhost:8081) | `airflow` / `airflow` |
 | **Grafana (Dashboards)** | [http://localhost:3000](http://localhost:3000) | `admin` / `admin` |
 | **MLflow (Modelos)** | [http://localhost:5000](http://localhost:5000) | - |
-| **Langfuse (Traces)** | [http://localhost:4000](http://localhost:4000) | (Criar conta inicial) |
 
 ---
 
