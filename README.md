@@ -88,5 +88,11 @@ O projeto segue as diretrizes da **LGPD** e as melhores práticas da **OWASP**:
 *   **OWASP Mapping**: Documentação completa sobre riscos de segurança em LLMs (em `docs/`).
 *   **System Card**: Detalhes sobre vieses e limitações do modelo.
 
+### Execução de Testes de Segurança
+Para validar nivel de proteção:
+```bash
+make -f Makefile.guardrails test
+```
+
 ---
 *Este repositório é parte integrante da avaliação da Fase 05 - Pós-Tech Machine Learning Engineering.*
