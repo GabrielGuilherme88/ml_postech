@@ -21,6 +21,7 @@ build/
 .venv
 .env
 .coverage
+.dvc
 
 # Distribuição / Empacotamento
 *.egg-info/
