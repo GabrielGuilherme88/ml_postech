@@ -108,23 +108,21 @@ async def health_check():
     """Verifica a integridade da API. Retorna `healthy` se o agente estiver pronto."""
     return {"status": "healthy", "agent": "Ana"}
 
-@app.get(
-    "/mlflow-ui",
-    tags=["MLflow"],
-    summary="Redireciona para o MLflow Dashboard",
-    description=(
-        "Redireciona para o Dashboard interativo do MLflow, onde é possível "
-        "visualizar experimentos, métricas (MAE, RMSE), parâmetros do modelo "
-        "e artefatos registrados durante o treinamento do `Previsor_de_Glosas`.\n\n"
-        "O dashboard completo está disponível em: "
-        "[http://localhost:8000/mlflow/](http://localhost:8000/mlflow/)"
-    ),
-    response_class=RedirectResponse,
-    status_code=302,
-)
+@app.get("/mlflow-ui", tags=["MLflow"])
 async def mlflow_redirect():
-    """Redireciona para o Dashboard do MLflow com todos os experimentos registrados."""
+    """Redireciona para o Dashboard do MLflow."""
     return RedirectResponse(url="/mlflow/")
+
+@app.get("/drift", response_class=HTMLResponse, tags=["Infra"])
+async def drift_report():
+    """Exibe o relatório de Data Drift gerado pelo Evidently."""
+    caminho_report = os.path.join(os.getcwd(), "reports", "drift_report.html")
+    if not os.path.exists(caminho_report):
+        return HTMLResponse("<h1>Relatório não gerado</h1><p>Execute 'make drift' para gerar o relatório.</p>", status_code=404)
+    
+    with open(caminho_report, "r", encoding="utf-8") as f:
+        return f.read()
+
 
 @app.post("/ask", response_model=QueryResponse, tags=["Agente Ana"])
 async def ask_ana(request: QueryRequest):

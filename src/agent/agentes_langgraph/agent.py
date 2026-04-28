@@ -21,6 +21,7 @@ import torch
 import asyncio
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from src.security.guardrails import OutputGuardrail
+import mlflow
 
 # Inicialização do Guardrail de Output
 output_guardrail = OutputGuardrail()
@@ -79,6 +80,7 @@ def _get_db() -> sqlite3.Connection:
 # Ferramenta de consulta SQL
 # ---------------------------------------------------------------------------
 
+@mlflow.trace(name="query_db")
 def _query_db(sql: str) -> str:
     """Executa uma query SELECT no banco de dados e retorna o resultado como string."""
     normalized = sql.strip().upper()
@@ -194,6 +196,7 @@ def _get_model():
 # Geração de resposta
 # ---------------------------------------------------------------------------
 
+@mlflow.trace(name="generate_response")
 def _generate_response(question: str, data: str) -> str:
     """
     Monta o prompt com contexto dos dados do banco 
@@ -225,6 +228,7 @@ def _generate_response(question: str, data: str) -> str:
 # Interface pública
 # ---------------------------------------------------------------------------
 
+@mlflow.trace(name="agent_run")
 async def run(message: str) -> AgentResult:
     """Executa o agente de forma assíncrona e retorna o resultado completo."""
     start_time = time.monotonic()

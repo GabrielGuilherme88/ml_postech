@@ -27,10 +27,16 @@ def run_drift_detection():
     
     # Referência: Todo o dataset histórico ('PAGO' ou 'INDEFERIDO') que foi usado base no modelo
     reference_df = pd.read_sql("SELECT * FROM pedidos_reembolso WHERE nm_situacaoreembolso != 'EM ANALISE'", conn)
-    
-    # Produção (Current): Dados inferidos pelo modelo e salvos em db_model
-    current_df = pd.read_sql("SELECT * FROM db_model", conn)
     conn.close()
+    
+    # Produção (Current): Dados inferidos pelo modelo e salvos em banco separado
+    db_model_path = os.getenv("DATABASE_MODEL_PATH", str(base_dir / "db_lite" / "meu_banco_de_dados_model.db"))
+    if os.path.exists(db_model_path):
+        conn_model = sqlite3.connect(db_model_path)
+        current_df = pd.read_sql("SELECT * FROM db_model", conn_model)
+        conn_model.close()
+    else:
+        current_df = pd.DataFrame()
 
     if reference_df.empty or current_df.empty:
         print("Dados insuficientes para calcular drift (referência ou dados de produção estão vazios).")
@@ -57,15 +63,17 @@ def run_drift_detection():
         TargetDriftPreset(),
     ])
 
+    from evidently.pipeline.column_mapping import ColumnMapping
+    cm = ColumnMapping()
+    cm.target = target_column
+    cm.prediction = "PREVISAO_GLOSA_PELO_IA"
+    cm.numerical_features = numerical_features
+    cm.categorical_features = categorical_features
+
     drift_report.run(
         reference_data=reference_df,
         current_data=current_df,
-        column_mapping={
-            "target": target_column,
-            "prediction": "PREVISAO_GLOSA_PELO_IA",
-            "numerical_features": numerical_features,
-            "categorical_features": categorical_features,
-        }
+        column_mapping=cm
     )
 
     os.makedirs(os.path.dirname(output_path), exist_ok=True)

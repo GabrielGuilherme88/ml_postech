@@ -17,7 +17,18 @@ mlruns/
 *.skops
 build/
 *.csv
+.dvc/
+.venv
 .env
 
 # Distribuição / Empacotamento
 *.egg-info/
+
+# Airflow
+airflow/airflow.cfg
+airflow/webserver_config.py
+airflow/logs/
+airflow/airflow.db
+airflow/*.pid
+airflow/*.err
+airflow/*.out

@@ -3,23 +3,19 @@
 
 a2wsgi
 accelerate
-datasets
 fastapi
 langchain
 langchain-community
 langchain-openai
 langfuse
-langgraph
 mlflow
 openai
 pandas
-pandera
 prometheus-client
 prometheus-fastapi-instrumentator
 presidio-analyzer
 presidio-anonymizer
 python-dotenv
-ragas
 scikit-learn
 seaborn
 skops
@@ -28,6 +24,10 @@ torch
 transformers
 uvicorn
 evidently==0.4.28
+apache-airflow[postgres]==2.9.0
+psycopg2-binary
+pluggy==1.6.0
+
 
 # Instala o projeto local em modo editável
 -e .

@@ -53,8 +53,11 @@ df_final = df.copy()
 df_final.loc[:, 'PREVISAO_GLOSA_PELO_IA'] = previsoes
 df_final.loc[:, 'vl_previsao'] = previsoes.round(2)
 
-# Salvar o log final da inferência na db_model como APPEND
-df_final.to_sql('db_model', conn, if_exists='append', index=False)
+# Salvar o log final da inferência em um banco separado para evitar conflitos de checkout do DVC
+caminho_db_model = caminho_base / "db_lite" / "meu_banco_de_dados_model.db"
+conn_model = sqlite3.connect(caminho_db_model)
+df_final.to_sql('db_model', conn_model, if_exists='append', index=False)
+conn_model.close()
 
 conn.close()
-print(f"✅ Inserção concluída! {len(df_final)} registros processados e inseridos na tabela db_model.")
+print(f"✅ Inserção concluída! {len(df_final)} registros processados e inseridos no banco de resultados: {caminho_db_model}")

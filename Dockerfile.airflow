@@ -1,0 +1,22 @@
+FROM ana-api:latest
+
+USER root
+RUN apt-get update && apt-get install -y make && rm -rf /var/lib/apt/lists/*
+USER root 
+
+# Instala o Airflow e dependências de banco sobre a imagem da Ana
+RUN pip install --no-cache-dir "apache-airflow[postgres]==2.9.0" \
+    --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.9.0/constraints-3.10.txt"
+
+RUN pip install --no-cache-dir psycopg2-binary pluggy==1.6.0
+
+# Instala o DVC
+RUN pip install --no-cache-dir dvc
+
+# Configurações de ambiente para o Airflow
+ENV AIRFLOW_HOME=/app/airflow
+ENV AIRFLOW__CORE__LOAD_EXAMPLES=False
+ENV AIRFLOW__CORE__EXECUTOR=LocalExecutor
+
+# O entrypoint original da ana-api pode não ser adequado para o Airflow
+# Vamos usar o comando do airflow diretamente no docker-compose

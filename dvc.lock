@@ -18,41 +18,66 @@ stages:
       md5: 8cc1636e96c786147e3ed31d7c0130c8
       size: 761856
   train:
-    cmd: PYTHONPATH=. ambi/bin/python src/models/train.py
+    cmd: PYTHONPATH=. python src/models/train.py
     deps:
     - path: db_lite/meu_banco_de_dados.db
       hash: md5
-      md5: 51bacd17294b54b696444b77d92e7d7a
+      md5: 8cc1636e96c786147e3ed31d7c0130c8
       size: 761856
     - path: src/models/train.py
       hash: md5
-      md5: fcc4d8dd9afd7f181c1b47931ce3f1d0
-      size: 3023
+      md5: 3dd41f3c1556242cecc99c89d7633150
+      size: 4250
     outs:
     - path: src/models/features_modelo.json
       hash: md5
-      md5: a9ab83bcb8278ebe3e36473c18b37415
-      size: 1778
+      md5: fe2e5f696780f46b5f891a90250c1219
+      size: 1805
     - path: src/models/modelo_glosa.skops
       hash: md5
-      md5: dd82752686752aac5a4ebdf5cf7ba13b
-      size: 1938048
+      md5: cf8b9345d1996f12e9d36bd3d160da40
+      size: 1932667
   inference:
     cmd: PYTHONPATH=. python src/models/insert_db_model.py
     deps:
     - path: db_lite/meu_banco_de_dados.db
       hash: md5
-      md5: 142e557b1cc326017798125522f16ba7
-      size: 790528
+      md5: 8cc1636e96c786147e3ed31d7c0130c8
+      size: 761856
     - path: src/models/features_modelo.json
       hash: md5
-      md5: a9ab83bcb8278ebe3e36473c18b37415
-      size: 1778
+      md5: fe2e5f696780f46b5f891a90250c1219
+      size: 1805
     - path: src/models/insert_db_model.py
       hash: md5
-      md5: 73db104f8c5fba53a0d6febdde906bb3
-      size: 2044
+      md5: 79072f6dac92a41ac945268bf9826b42
+      size: 2253
     - path: src/models/modelo_glosa.skops
       hash: md5
-      md5: dd82752686752aac5a4ebdf5cf7ba13b
-      size: 1938048
+      md5: cf8b9345d1996f12e9d36bd3d160da40
+      size: 1932667
+    outs:
+    - path: db_lite/meu_banco_de_dados_model.db
+      hash: md5
+      md5: ee8e9b5df4da94104bdd53e91ddb47c9
+      size: 36864
+  drift:
+    cmd: PYTHONPATH=. python src/monitoring/drift_detection.py
+    deps:
+    - path: db_lite/meu_banco_de_dados.db
+      hash: md5
+      md5: 8cc1636e96c786147e3ed31d7c0130c8
+      size: 761856
+    - path: db_lite/meu_banco_de_dados_model.db
+      hash: md5
+      md5: ee8e9b5df4da94104bdd53e91ddb47c9
+      size: 36864
+    - path: src/monitoring/drift_detection.py
+      hash: md5
+      md5: 494ea04b14186baa7de22cdcc1ec7818
+      size: 3185
+    outs:
+    - path: reports/drift_report.html
+      hash: md5
+      md5: 6a116b0a1228e3230493383ad865b72c
+      size: 3732750

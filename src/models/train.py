@@ -7,79 +7,103 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 from mlflow_utils import setup_mlflow, log_training
+import mlflow
 
-caminho_base = Path(__file__).resolve().parents[2]
-caminho_db = caminho_base / "db_lite" / "meu_banco_de_dados.db"
+@mlflow.trace(name="load_and_preprocess")
+def load_and_preprocess():
+    caminho_base = Path(__file__).resolve().parents[2]
+    caminho_db = caminho_base / "db_lite" / "meu_banco_de_dados.db"
 
-print(f"Buscando dados no banco de dados em: {caminho_db}")
+    print(f"Buscando dados no banco de dados em: {caminho_db}")
 
-conn = sqlite3.connect(caminho_db)
-df = pd.read_sql("SELECT * FROM pedidos_reembolso", conn)
-conn.close()
+    conn = sqlite3.connect(caminho_db)
+    df = pd.read_sql("SELECT * FROM pedidos_reembolso", conn)
+    conn.close()
 
-# 1. Expandindo nossas Variáveis Preditivas (X) e nosso Alvo (y)
-colunas_preditoras = ['cd_procedimento', 'vl_informado', 'qt_informado', 'cd_tipoproduto']
-alvo = 'vl_glosa'
+    # 1. Expandindo nossas Variáveis Preditivas (X) e nosso Alvo (y)
+    colunas_preditoras = ['cd_procedimento', 'vl_informado', 'qt_informado', 'cd_tipoproduto']
+    alvo = 'vl_glosa'
 
-# 2. Separando "O Passado/Decidido" vs "O Futuro/Em Análise"
-df_historico = df[df['nm_situacaoreembolso'].isin(['PAGO', 'INDEFERIDO'])].copy()
-df_futuro_analise = df[df['nm_situacaoreembolso'] == 'EM ANALISE'].copy()
+    # 2. Separando "O Passado/Decidido" vs "O Futuro/Em Análise"
+    df_historico = df[df['nm_situacaoreembolso'].isin(['PAGO', 'INDEFERIDO'])].copy()
+    df_futuro_analise = df[df['nm_situacaoreembolso'] == 'EM ANALISE'].copy()
 
-print(f"Tamanho da Base Histórica para Treinar: {len(df_historico)} pedidos")
-print(f"Tamanho da Base EM ANALISE para Prever: {len(df_futuro_analise)} pedidos\n")
+    print(f"Tamanho da Base Histórica para Treinar: {len(df_historico)} pedidos")
+    print(f"Tamanho da Base EM ANALISE para Prever: {len(df_futuro_analise)} pedidos\n")
 
-X_historico = df_historico[colunas_preditoras].copy()
-y_historico = df_historico[alvo]
+    X_historico = df_historico[colunas_preditoras].copy()
+    y_historico = df_historico[alvo]
 
-X_historico = pd.get_dummies(X_historico, columns=['cd_procedimento'])
+    X_historico = pd.get_dummies(X_historico, columns=['cd_procedimento'])
 
-X_treino, X_teste, y_treino, y_teste = train_test_split(
-    X_historico, y_historico, test_size=0.2, random_state=42
-)
+    X_treino, X_teste, y_treino, y_teste = train_test_split(
+        X_historico, y_historico, test_size=0.2, random_state=42
+    )
+    
+    return X_treino, X_teste, y_treino, y_teste, df_futuro_analise, X_historico
 
-setup_mlflow()
+@mlflow.trace(name="train_model")
+def train_model(X_treino, y_treino, parametros_rf):
+    modelo = RandomForestRegressor(**parametros_rf)
+    modelo.fit(X_treino, y_treino)
+    return modelo
 
-parametros_rf = {"n_estimators": 100, "random_state": 42}
+@mlflow.trace(name="evaluate_model")
+def evaluate_model(modelo, X_teste, y_teste):
+    previsoes_teste = modelo.predict(X_teste)
+    mae = mean_absolute_error(y_teste, previsoes_teste)
+    return mae
 
-modelo = RandomForestRegressor(**parametros_rf)
-modelo.fit(X_treino, y_treino)
+@mlflow.trace(name="predict_future")
+def predict_future(modelo, df_futuro_analise, X_historico):
+    colunas_preditoras = ['cd_procedimento', 'vl_informado', 'qt_informado', 'cd_tipoproduto']
+    X_futuro = df_futuro_analise[colunas_preditoras].copy()
+    X_futuro = pd.get_dummies(X_futuro, columns=['cd_procedimento'])
 
-previsoes_teste = modelo.predict(X_teste)
-mae = mean_absolute_error(y_teste, previsoes_teste)
+    X_futuro = X_futuro.reindex(columns=X_historico.columns, fill_value=0)
 
-# Log via utilitário separado
-log_training(
-    modelo=modelo,
-    parametros=parametros_rf,
-    metricas={"MAE": mae},
-    X_train=X_treino
-)
+    df_futuro_analise.loc[:, 'PREVISAO_GLOSA_PELO_IA'] = modelo.predict(X_futuro)
+    df_futuro_analise.loc[:, 'vl_previsao'] = modelo.predict(X_futuro).round(2)
+    return df_futuro_analise
 
-print(f"Desempenho no Histórico (O quão bem ele está lembrando) -> MAE: R$ {mae:.2f}")
+@mlflow.trace(name="save_model")
+def save_model(modelo, X_historico):
+    caminho_salvar_modelo = Path(__file__).resolve().parent / "modelo_glosa.skops"
+    caminho_salvar_features = Path(__file__).resolve().parent / "features_modelo.json"
 
-# Preparando a base que queremos adivinhar o futuro:
-X_futuro = df_futuro_analise[colunas_preditoras].copy()
-X_futuro = pd.get_dummies(X_futuro, columns=['cd_procedimento'])
+    sio.dump(modelo, caminho_salvar_modelo)
 
-X_futuro = X_futuro.reindex(columns=X_historico.columns, fill_value=0)
+    with open(caminho_salvar_features, 'w', encoding='utf-8') as f:
+        json.dump(list(X_historico.columns), f)
+        
+    return caminho_salvar_modelo, caminho_salvar_features
 
-df_futuro_analise.loc[:, 'PREVISAO_GLOSA_PELO_IA'] = modelo.predict(X_futuro)
+@mlflow.trace(name="training_pipeline")
+def run_pipeline():
+    X_treino, X_teste, y_treino, y_teste, df_futuro_analise, X_historico = load_and_preprocess()
+    
+    parametros_rf = {"n_estimators": 100, "random_state": 42}
+    modelo = train_model(X_treino, y_treino, parametros_rf)
+    
+    mae = evaluate_model(modelo, X_teste, y_teste)
+    print(f"Desempenho no Histórico (O quão bem ele está lembrando) -> MAE: R$ {mae:.2f}")
+    
+    # Log via utilitário separado
+    log_training(
+        modelo=modelo,
+        parametros=parametros_rf,
+        metricas={"MAE": mae},
+        X_train=X_treino
+    )
+    
+    df_futuro_analise = predict_future(modelo, df_futuro_analise, X_historico)
+    print("\n--- PREVIEW DA FILA 'EM ANÁLISE' COM O JULGAMENTO DA NOSSA IA ---")
+    
+    caminho_modelo, caminho_features = save_model(modelo, X_historico)
+    print(f"\n🛡️ Modelo salvo com Skops em: {caminho_modelo}")
+    print(f"📦 Features salvas com JSON em: {caminho_features}")
 
-df_futuro_analise.loc[:, 'vl_previsao'] = modelo.predict(X_futuro).round(2)
-
-print("\n--- PREVIEW DA FILA 'EM ANÁLISE' COM O JULGAMENTO DA NOSSA IA ---")
-
-# -------------------------------------------------------------
-# 6. EXPORTANDO O MODELO PARA A API (COM SKOPS)
-# -------------------------------------------------------------
-
-caminho_salvar_modelo = Path(__file__).resolve().parent / "modelo_glosa.skops"
-caminho_salvar_features = Path(__file__).resolve().parent / "features_modelo.json"
-
-sio.dump(modelo, caminho_salvar_modelo)
-
-with open(caminho_salvar_features, 'w', encoding='utf-8') as f:
-    json.dump(list(X_historico.columns), f)
-
-print(f"\n🛡️ Modelo salvo com Skops em: {caminho_salvar_modelo}")
-print(f"📦 Features salvas com JSON em: {caminho_salvar_features}")
+if __name__ == "__main__":
+    setup_mlflow()
+    mlflow.sklearn.autolog() # Bônus: autologging do sklearn também!
+    run_pipeline()

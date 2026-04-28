@@ -244,9 +244,14 @@ HTML_CONTENT = """
                     <h1>Ana Auditora</h1>
                     <p style="margin-bottom: 0;">Sua assistente inteligente para análise de glosas.</p>
                 </div>
-                <a href="/mlflow" target="_blank" class="suggestion-chip" style="text-decoration: none; border-color: var(--accent-primary); color: var(--accent-primary); display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-weight: 600;">
-                    📊 Dash MLflow
-                </a>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/mlflow" target="_blank" class="suggestion-chip" style="text-decoration: none; border-color: var(--accent-primary); color: var(--accent-primary); display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-weight: 600;">
+                        📊 Dash MLflow
+                    </a>
+                    <a href="/drift" target="_blank" class="suggestion-chip" style="text-decoration: none; border-color: var(--accent-secondary); color: var(--accent-secondary); display: flex; align-items: center; gap: 8px; padding: 8px 16px; font-weight: 600;">
+                        📈 Drift Report
+                    </a>
+                </div>
             </div>
         </header>
 

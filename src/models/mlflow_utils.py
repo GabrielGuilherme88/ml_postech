@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 import time
 
-def setup_mlflow():
+def setup_mlflow(experiment_name="Previsor_de_Glosas"):
     load_dotenv()
     
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
@@ -23,7 +23,7 @@ def setup_mlflow():
     # Retry para aguardar MLflow estar pronto
     for i in range(10):
         try:
-            mlflow.set_experiment("Previsor_de_Glosas")
+            mlflow.set_experiment(experiment_name)
             print("✅ Conectado ao MLflow com sucesso!")
             return
         except Exception as e:

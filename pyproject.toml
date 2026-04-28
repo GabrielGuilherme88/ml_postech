@@ -8,23 +8,19 @@ authors = [
 dependencies = [
     "a2wsgi",
     "accelerate",
-    "datasets",
     "fastapi",
     "langchain",
     "langchain-community",
     "langchain-openai",
     "langfuse",
-    "langgraph",
     "mlflow",
     "openai",
     "pandas",
-    "pandera",
     "presidio-analyzer",
     "presidio-anonymizer",
     "prometheus-client",
     "prometheus-fastapi-instrumentator",
     "python-dotenv",
-    "ragas",
     "scikit-learn",
     "seaborn",
     "skops",
@@ -32,9 +28,15 @@ dependencies = [
     "transformers",
     "uvicorn",
     "structlog",
-    "evidently==0.4.28"
+    "evidently==0.4.28",
+    "apache-airflow[postgres]==2.9.0",
+    "psycopg2-binary",
+    "pluggy==1.6.0"
 ]
 requires-python = ">=3.10"
+
+[project.scripts]
+drift-detection = "src.monitoring.drift_detection:run_drift_detection"
 
 [project.optional-dependencies]
 dev = [

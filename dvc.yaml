@@ -23,10 +23,21 @@ stages:
       - src/models/features_modelo.json
       - src/models/insert_db_model.py
       - db_lite/meu_banco_de_dados.db
+    outs:
+      - db_lite/meu_banco_de_dados_model.db
 
   evaluate:
-    cmd: PYTHONPATH=. python evaluation/ragas_eval.py
+    cmd: PYTHONPATH=. python evaluation/mlflow_eval.py
     deps:
-      - evaluation/ragas_eval.py
+      - evaluation/mlflow_eval.py
       - data/golden_set/golden_set.json
       - db_lite/meu_banco_de_dados.db
+
+  drift:
+    cmd: PYTHONPATH=. python src/monitoring/drift_detection.py
+    deps:
+      - src/monitoring/drift_detection.py
+      - db_lite/meu_banco_de_dados.db
+      - db_lite/meu_banco_de_dados_model.db
+    outs:
+      - reports/drift_report.html

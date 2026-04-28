@@ -3,11 +3,11 @@
 Use este checklist como guia de progresso antes do Demo Day. Você pode editá-lo e marcar os itens conforme for finalizando.
 
 ### Etapa 1 — Dados + Baseline
-- [ ] EDA documentada com insights relevantes para o problema da empresa.
-- [ ] Baseline treinado e métricas reportadas no MLflow.
-- [ ] Pipeline versionado (DVC + Docker) e reprodutível.
-- [ ] Métricas de negócio mapeadas para métricas técnicas.
-- [ ] `pyproject.toml` com todas as dependências.
+- [x] EDA documentada com insights relevantes para o problema da empresa.
+- [x] Baseline treinado e métricas reportadas no MLflow.
+- [x] Pipeline versionado (DVC + Docker) e reprodutível.
+- [x] Métricas de negócio mapeadas para métricas técnicas.
+- [x] `pyproject.toml` com todas as dependências.
 
 ### Etapa 2 — LLM + Agente
 - [ ] LLM servido via API com quantização aplicada.
