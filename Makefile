@@ -30,7 +30,7 @@ test:
 
 lint:
 	$(RUFF) check .
-	$(MYPY) . --ignore-missing-imports
+	$(MYPY) . --ignore-missing-imports --explicit-package-bases
 	$(BANDIT) -r src/ -c pyproject.toml
 
 data:

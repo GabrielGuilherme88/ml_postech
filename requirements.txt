@@ -8,9 +8,11 @@ langchain
 langchain-community
 langchain-openai
 langfuse
+matplotlib
 mlflow
 openai
 pandas
+requests
 prometheus-client
 prometheus-fastapi-instrumentator
 presidio-analyzer
@@ -27,7 +29,6 @@ evidently==0.4.28
 apache-airflow[postgres]==2.9.0
 psycopg2-binary
 pluggy==1.6.0
-
 
 # Instala o projeto local em modo editável
 -e .

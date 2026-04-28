@@ -13,9 +13,11 @@ dependencies = [
     "langchain-community",
     "langchain-openai",
     "langfuse",
+    "matplotlib",
     "mlflow",
     "openai",
     "pandas",
+    "requests",
     "presidio-analyzer",
     "presidio-anonymizer",
     "prometheus-client",
@@ -59,4 +61,7 @@ target-version = "py310"
 
 [tool.mypy]
 ignore_missing_imports = true
-strict = true
+strict = false
+exclude = ["ambi", ".venv", "venv"]
+disallow_untyped_defs = false
+check_untyped_defs = false

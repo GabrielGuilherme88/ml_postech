@@ -44,6 +44,8 @@ docker compose up -d --build
 | **Airflow (Orquestração)** | [http://localhost:8081](http://localhost:8081) | `airflow` / `airflow` |
 | **Grafana (Dashboards)** | [http://localhost:3000](http://localhost:3000) | `admin` / `admin` |
 | **MLflow (Modelos)** | [http://localhost:5000](http://localhost:5000) | - |
+| **drift report** | [http://localhost:8000/drift](http://localhost:8000/drift) | - |
+
 
 ---
 

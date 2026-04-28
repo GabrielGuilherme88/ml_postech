@@ -4,9 +4,9 @@ services:
     ports:
       - "5000:5000"
     command: >
-      mlflow server --host 0.0.0.0 --backend-store-uri sqlite:////mlflow/mlflow.db --artifacts-destination /mlflow/artifacts --serve-artifacts --allowed-hosts "*"
+      mlflow server --host 0.0.0.0 --backend-store-uri sqlite:////app/db_lite/meu_banco_de_dados.db --default-artifact-root /app/mlruns --artifacts-destination /app/mlruns --serve-artifacts --allowed-hosts "*"
     volumes:
-      - mlflow_data:/mlflow
+      - .:/app
     healthcheck:
       test: [ "CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:5000/\")' || exit 1" ]
       interval: 10s
@@ -146,7 +146,12 @@ services:
     depends_on:
       - airflow-db
     command: >
-      bash -c "airflow db init &&
+      bash -c "echo 'Aguardando banco de dados...' &&
+      until printf '' 2>>/dev/null >/dev/tcp/airflow-db/5432; do 
+        sleep 2; 
+      done &&
+      echo 'Banco pronto! Inicializando Airflow...' &&
+      airflow db init &&
       airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
 
 
