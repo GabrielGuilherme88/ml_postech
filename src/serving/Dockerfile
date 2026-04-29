@@ -10,6 +10,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # 2. Copia APENAS os arquivos de dependências
@@ -18,7 +19,8 @@ COPY requirements.txt* .
 
 # 3. Instala as bibliotecas (Se o pyproject.toml não mudou, o Docker pula isso)
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -e ".[dev]"
+    pip install --no-cache-dir -e ".[dev]" && \
+    python -m spacy download en_core_web_lg
 
 # 4. Cria o simlink
 RUN mkdir -p /app/ambi/bin && ln -s $(which python) /app/ambi/bin/python
