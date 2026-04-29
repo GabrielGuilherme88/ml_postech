@@ -29,18 +29,24 @@ def run_drift_detection():
     reference_df = pd.read_sql("SELECT * FROM pedidos_reembolso WHERE nm_situacaoreembolso != 'EM ANALISE'", conn)
     conn.close()
     
-    # Produção (Current): Dados inferidos pelo modelo e salvos em banco separado
-    db_model_path = os.getenv("DATABASE_MODEL_PATH", str(base_dir / "db_lite" / "meu_banco_de_dados_model.db"))
-    if os.path.exists(db_model_path):
+    # Produção (Current): Dados inferidos pelo modelo e salvos na tabela db_model
+    db_model_path = os.getenv("DATABASE_MODEL_PATH", str(base_dir / "db_lite" / "meu_banco_de_dados.db"))
+    
+    try:
         conn_model = sqlite3.connect(db_model_path)
         current_df = pd.read_sql("SELECT * FROM db_model", conn_model)
         conn_model.close()
-    else:
+    except Exception as e:
+        print(f"⚠️ Aviso: Não foi possível ler a tabela 'db_model' em {db_model_path}: {e}")
         current_df = pd.DataFrame()
 
     if reference_df.empty or current_df.empty:
         print("Dados insuficientes para calcular drift (referência ou dados de produção estão vazios).")
-        return
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("<html><body><h1>Relatório de Drift</h1><p>Dados insuficientes para calcular drift (referência ou dados de produção estão vazios).</p></body></html>")
+        print(f"⚠️ Relatório de aviso criado em: {output_path}")
+        return output_path
 
     print(f"Dados carregados. Referência: {len(reference_df)} linhas | Produção: {len(current_df)} linhas")
 

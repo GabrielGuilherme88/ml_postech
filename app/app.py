@@ -9,9 +9,10 @@ import ast
 import operator
 from src.agent.agentes_langgraph import agent
 from src.security.guardrails import InputGuardrail
-from mlflow_dash import mlflow_app
+from .mlflow_dash import mlflow_app
+from src.models.mlflow_utils import setup_mlflow
 from prometheus_fastapi_instrumentator import Instrumentator
-from htm import HTML_CONTENT
+from .htm import HTML_CONTENT
 
 _SAFE_OPS = {
     ast.Add: operator.add,
@@ -51,6 +52,9 @@ logger = structlog.get_logger()
 
 # Inicialização do Guardrail de Input
 input_guardrail = InputGuardrail()
+
+# Inicialização do MLflow Tracking (para Traces)
+setup_mlflow()
 
 # Tags para organizar o Swagger UI
 openapi_tags = [

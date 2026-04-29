@@ -34,8 +34,8 @@ df_db_model['PREVISAO_GLOSA_PELO_IA'] = pd.Series(dtype='float64')
 df_db_model['vl_previsao'] = pd.Series(dtype='float64')
 df_db_model.to_sql('db_model', conn, if_exists='replace', index=False)
 
-# Inicializa o esquema do MLflow no banco de dados
-mlflow.set_tracking_uri(f"sqlite:///{db_path}")
+# Inicializa o esquema do MLflow no banco de dados separado
+mlflow.set_tracking_uri(f"sqlite:///{db_dir}/mlflow.db")
 # Criar o experimento garante que o MLflow inicialize as tabelas internas se não existirem
 mlflow.set_experiment("Previsor_de_Glosas")
 
