@@ -53,11 +53,18 @@ df_final = df.copy()
 df_final.loc[:, 'PREVISAO_GLOSA_PELO_IA'] = previsoes
 df_final.loc[:, 'vl_previsao'] = previsoes.round(2)
 
-# Salvar o log final da inferência em um banco separado para evitar conflitos de checkout do DVC
-caminho_db_model = caminho_base / "db_lite" / "meu_banco_de_dados_model.db"
+# Salvar o log final da inferência no mesmo banco (tabela db_model)
+caminho_db_model = caminho_base / "db_lite" / "meu_banco_de_dados.db"
 conn_model = sqlite3.connect(caminho_db_model)
 df_final.to_sql('db_model', conn_model, if_exists='append', index=False)
 conn_model.close()
 
 conn.close()
-print(f"✅ Inserção concluída! {len(df_final)} registros processados e inseridos no banco de resultados: {caminho_db_model}")
+
+# Criar marcador para o DVC
+marker_path = caminho_base / "reports" / "inference_marker.txt"
+marker_path.parent.mkdir(parents=True, exist_ok=True)
+with open(marker_path, "w", encoding="utf-8") as f:
+    f.write(f"Inference completed at {pd.Timestamp.now()}")
+
+print(f"✅ Inserção concluída! {len(df_final)} registros processados e inseridos na tabela 'db_model' do banco: {caminho_db_model}")

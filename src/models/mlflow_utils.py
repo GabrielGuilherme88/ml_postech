@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import time
 
 def setup_mlflow(experiment_name="Previsor_de_Glosas"):
-    load_dotenv()
+    load_dotenv(override=False)
     
     tracking_uri = os.getenv("MLFLOW_TRACKING_URI")
     
@@ -16,7 +16,7 @@ def setup_mlflow(experiment_name="Previsor_de_Glosas"):
         print(f"📡 MLflow Tracking URI definida para: {tracking_uri}")
     else:
         caminho_base = Path(__file__).resolve().parents[2]
-        db_path = caminho_base / "db_lite" / "meu_banco_de_dados.db"
+        db_path = caminho_base / "db_lite" / "mlflow.db"
         mlflow.set_tracking_uri(f"sqlite:///{db_path}")
         print(f"📁 MLflow Tracking URI usando fallback SQLite: {db_path}")
 
