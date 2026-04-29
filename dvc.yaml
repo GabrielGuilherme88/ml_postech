@@ -24,7 +24,7 @@ stages:
       - src/models/insert_db_model.py
       - db_lite/meu_banco_de_dados.db
     outs:
-      - db_lite/meu_banco_de_dados_model.db
+      - reports/inference_marker.txt
 
   evaluate:
     cmd: PYTHONPATH=. python evaluation/mlflow_eval.py
@@ -38,6 +38,6 @@ stages:
     deps:
       - src/monitoring/drift_detection.py
       - db_lite/meu_banco_de_dados.db
-      - db_lite/meu_banco_de_dados_model.db
+      - reports/inference_marker.txt
     outs:
       - reports/drift_report.html

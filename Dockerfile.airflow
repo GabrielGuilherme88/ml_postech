@@ -1,7 +1,7 @@
 FROM ana-api:latest
 
 USER root
-RUN apt-get update && apt-get install -y make && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y make postgresql-client git && rm -rf /var/lib/apt/lists/*
 
 # Instala o projeto com todas as dependências (incluindo as de dev como DVC)
 # E garante que o Airflow seja instalado com as restrições oficiais

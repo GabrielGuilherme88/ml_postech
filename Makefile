@@ -2,7 +2,7 @@
 
 # Caminhos dos binários (vazio por padrão para usar o PATH do sistema)
 BIN_DIR ?= 
-PYTHON  ?= $(BIN_DIR)python
+PYTHON  ?= $(BIN_DIR)python3
 DVC     ?= $(BIN_DIR)dvc
 RUFF    ?= $(BIN_DIR)ruff
 MYPY    ?= $(BIN_DIR)mypy

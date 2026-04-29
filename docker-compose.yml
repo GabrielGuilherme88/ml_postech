@@ -4,7 +4,9 @@ services:
     ports:
       - "5000:5000"
     command: >
-      mlflow server --host 0.0.0.0 --backend-store-uri sqlite:////app/db_lite/meu_banco_de_dados.db --default-artifact-root /app/mlruns --artifacts-destination /app/mlruns --serve-artifacts --allowed-hosts "*"
+      mlflow server --host 0.0.0.0 --backend-store-uri sqlite:////app/mlflow.db --default-artifact-root /app/mlruns --artifacts-destination /app/mlruns --serve-artifacts --allowed-hosts "*"
+    environment:
+      - GIT_PYTHON_REFRESH=quiet
     volumes:
       - .:/app
     healthcheck:
@@ -26,7 +28,6 @@ services:
       sh -c "
         PYTHONPATH=. python db_lite/create_db.py &&
         PYTHONPATH=. python db_lite/data_base.py &&
-        PYTHONPATH=. python src/models/train.py &&
         PYTHONPATH=. python src/models/insert_db_model.py
       "
     depends_on:
@@ -35,8 +36,12 @@ services:
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - PYTHONPATH=/app
+      - GIT_PYTHON_REFRESH=quiet
 
   api:
+    build:
+      context: .
+      dockerfile: src/serving/Dockerfile
     image: ana-api:latest
     ports:
       - "8000:8000"
@@ -45,14 +50,22 @@ services:
     volumes:
       - .:/app
       - hf_cache:/app/models_cache
+      - spacy_cache:/usr/local/lib/python3.12/site-packages/en_core_web_lg/
     depends_on:
       mlflow:
         condition: service_healthy
       prometheus:
         condition: service_started
+    command: >
+      sh -c "
+        PYTHONPATH=. python db_lite/create_db.py &&
+        PYTHONPATH=. python db_lite/data_base.py &&
+        uvicorn app.app:app --host 0.0.0.0 --port 8000
+      "
     environment:
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - PYTHONPATH=/app
+      - GIT_PYTHON_REFRESH=quiet
       - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
       - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
       - LANGFUSE_HOST=${LANGFUSE_HOST:-http://langfuse:3001}
@@ -104,6 +117,11 @@ services:
       - POSTGRES_PASSWORD=langfuse
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Langfuse v2 — última versão que NÃO exige Clickhouse
   langfuse:
@@ -116,7 +134,8 @@ services:
       - NEXTAUTH_URL=http://localhost:3001
       - SALT=your-salt-change-in-production
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   evidently:
     image: evidently/evidently-service:latest
@@ -135,6 +154,11 @@ services:
       - POSTGRES_DB=airflow
     volumes:
       - airflow_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   airflow-init:
     build:
@@ -144,16 +168,12 @@ services:
     environment:
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@airflow-db/airflow
     depends_on:
-      - airflow-db
+      airflow-db:
+        condition: service_healthy
     command: >
-      bash -c "echo 'Aguardando banco de dados...' &&
-      until printf '' 2>>/dev/null >/dev/tcp/airflow-db/5432; do 
+      bash -c "echo 'Aguardando banco de dados...' && until pg_isready -h airflow-db -U airflow; do 
         sleep 2; 
-      done &&
-      echo 'Banco pronto! Inicializando Airflow...' &&
-      airflow db init &&
-      airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
-
+      done && echo 'Banco pronto! Inicializando Airflow...' && airflow db init && airflow users create --username admin --password admin --firstname Admin --lastname User --role Admin --email admin@example.com"
 
   airflow-webserver:
     build:
@@ -167,6 +187,7 @@ services:
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - PYTHONPATH=/app
+      - GIT_PYTHON_REFRESH=quiet
     volumes:
       - ./airflow/dags:/app/airflow/dags
       - ./airflow/logs:/app/airflow/logs
@@ -187,6 +208,7 @@ services:
       - AIRFLOW__CORE__LOAD_EXAMPLES=False
       - MLFLOW_TRACKING_URI=http://mlflow:5000
       - PYTHONPATH=/app
+      - GIT_PYTHON_REFRESH=quiet
     volumes:
       - ./airflow/dags:/app/airflow/dags
       - ./airflow/logs:/app/airflow/logs
@@ -197,8 +219,6 @@ services:
       airflow-init:
         condition: service_completed_successfully
 
-
-
 volumes:
   hf_cache:
   mlflow_data:
@@ -206,3 +226,4 @@ volumes:
   grafana_data:
   postgres_data:
   airflow_postgres_data:
+  spacy_cache:
