@@ -23,6 +23,23 @@ O projeto utiliza uma arquitetura moderna de microsserviços e ferramentas de go
 
 ---
 
+## 💻 Configuração do Ambiente Local
+
+Se desejar executar ou desenvolver o projeto fora do Docker, siga os passos abaixo para configurar seu ambiente:
+
+### 1. Criar e Ativar o Ambiente Virtual
+```bash
+python -m venv ambi
+source ambi/bin/activate
+```
+
+### 2. Instalar Dependências
+```bash
+pip install -r requirements.txt
+```
+
+---
+
 ## 🚀 Como Executar a Infraestrutura (Docker)
 
 O projeto está totalmente conteinerizado. Com um único comando, você sobe toda a stack de auditoria e monitoramento.
