@@ -23,9 +23,9 @@ def test_input_guardrail_length():
     assert "excede tamanho máximo" in message
 
 def test_output_guardrail_anonymization():
-    # Nota: Este teste pode falhar em ambientes sem o modelo de linguagem do Spacy configurado,
-    # por isso usamos um try/except básico ou verificamos se ele falha com segurança (fail-safe).
-    guardrail = OutputGuardrail(language="en") # Usando "en" pois o spacy-lg foi baixado em inglês
+    # Nota: Agora usamos 'pt' pois configuramos o engine NLP do spaCy para português
+    guardrail = OutputGuardrail(language="pt")
+
     
     text_with_pii = "O paciente João Silva (email: joao@gmail.com) teve uma glosa de R$ 500."
     sanitized = guardrail.sanitize(text_with_pii)

@@ -1,7 +1,8 @@
 """Guardrails de segurança para input e output do agente."""
 import logging
 import re
-from presidio_analyzer import AnalyzerEngine
+from presidio_analyzer import AnalyzerEngine, PatternRecognizer, Pattern
+from presidio_analyzer.nlp_engine import NlpEngineProvider
 from presidio_anonymizer import AnonymizerEngine
 
 logger = logging.getLogger(__name__)
@@ -15,6 +16,9 @@ class InputGuardrail:
         r"<\|im_start\|>",
         r"\[INST\]",
         r"forget\s+(everything|all|your\s+instructions)",
+        r"ignore\s+todas\s+as\s+instruções\s+anteriores",
+        r"você\s+agora\s+é\s+um",
+        r"ignorar\s+as\s+regras",
     ]
 
     def __init__(self, allowed_topics: list[str] | None = None):
@@ -36,9 +40,37 @@ class InputGuardrail:
 class OutputGuardrail:
     """Valida e sanitiza output do LLM antes de retornar ao usuário."""
     def __init__(self, language: str = "pt"):
-        self.analyzer = AnalyzerEngine()
+        # Configurar engine NLP para português
+        configuration = {
+            "nlp_engine_name": "spacy",
+            "models": [{"lang_code": "pt", "model_name": "pt_core_news_lg"}],
+        }
+        provider = NlpEngineProvider(nlp_configuration=configuration)
+        nlp_engine = provider.create_engine()
+        
+        self.analyzer = AnalyzerEngine(
+            nlp_engine=nlp_engine, 
+            supported_languages=["pt"], 
+            default_score_threshold=0.4
+        )
         self.anonymizer = AnonymizerEngine()
         self.language = language
+        self._add_custom_recognizers()
+
+    def _add_custom_recognizers(self):
+        """Adiciona reconhecedores para documentos brasileiros."""
+        # Reconhecedor de CPF
+        cpf_pattern = Pattern(
+            name="cpf_pattern",
+            regex=r"\d{3}\.\d{3}\.\d{3}-\d{2}|\d{11}",
+            score=0.5
+        )
+        cpf_recognizer = PatternRecognizer(
+            supported_entity="BR_CPF",
+            patterns=[cpf_pattern],
+            supported_language="pt"
+        )
+        self.analyzer.registry.add_recognizer(cpf_recognizer)
 
     def sanitize(self, llm_output: str) -> str:
         try:

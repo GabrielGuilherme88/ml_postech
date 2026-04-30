@@ -6,10 +6,9 @@ PYTHON = ambi/bin/python
 
 test: setup-spacy
 	@echo "🛡️ Rodando testes exclusivos de Guardrails..."
-	$(PYTHON) -m pytest tests/test_guardrails_unit.py
-	$(PYTHON) -m pytest tests/test_ana_security.py
-	@echo "✅ Testes de Guardrails concluídos!"
+	$(PYTHON) -m pytest -s -q --disable-warnings tests/test_guardrails_unit.py
+	$(PYTHON) -m pytest -s -q --disable-warnings tests/test_ana_security.py
+	@echo "\n✅ Todos os testes de segurança foram concluídos com sucesso!"
 
 setup-spacy:
-	@echo "⬇️ Garantindo que o modelo de idioma do spaCy (pt_core_news_lg) esteja instalado..."
-	$(PYTHON) -m spacy download pt_core_news_lg || echo "Aviso: Falha ao baixar o modelo spaCy. Os testes de PII podem falhar."
+	@$(PYTHON) -c "import pt_core_news_lg" 2>/dev/null || (echo "⬇️ Baixando modelo de idioma do spaCy (pt_core_news_lg)..." && $(PYTHON) -m spacy download pt_core_news_lg || echo "Aviso: Falha ao baixar o modelo spaCy.")
