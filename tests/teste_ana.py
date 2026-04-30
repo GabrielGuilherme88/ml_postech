@@ -7,6 +7,10 @@ from pathlib import Path
 sys.path.append(os.getcwd())
 
 from src.agent.agentes_langgraph.agent import run
+from src.models.mlflow_utils import setup_mlflow
+
+# Configurar MLflow para o experimento correto
+setup_mlflow("Avaliacao_GenAI_Ana")
 
 async def main():
     pergunta = "Me conte mais sobre você?"

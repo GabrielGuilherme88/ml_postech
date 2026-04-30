@@ -11,6 +11,7 @@ from src.agent.agentes_langgraph import agent
 from src.security.guardrails import InputGuardrail
 from .mlflow_dash import mlflow_app
 from src.models.mlflow_utils import setup_mlflow
+import mlflow
 from prometheus_fastapi_instrumentator import Instrumentator
 from .htm import HTML_CONTENT
 
@@ -53,8 +54,9 @@ logger = structlog.get_logger()
 # Inicialização do Guardrail de Input
 input_guardrail = InputGuardrail()
 
-# Inicialização do MLflow Tracking (para Traces)
-setup_mlflow()
+# Inicialização do MLflow Tracking (para Traces da GenAI)
+APP_VERSION = "1.0.0-OpenRouter"
+setup_mlflow("Avaliacao_GenAI_Ana")
 
 # Tags para organizar o Swagger UI
 openapi_tags = [
