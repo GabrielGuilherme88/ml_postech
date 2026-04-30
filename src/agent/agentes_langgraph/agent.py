@@ -17,10 +17,13 @@ from typing import Any, AsyncGenerator
 
 import mlflow
 import structlog
-import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from openai import OpenAI
+from dotenv import load_dotenv
 
 from src.security.guardrails import OutputGuardrail
+
+# Carregar ambiente
+load_dotenv()
 
 # Configuração de Logs
 logger = structlog.get_logger()
@@ -181,53 +184,64 @@ def _build_sql_from_question(question: str) -> str:
     )
 
 # ---------------------------------------------------------------------------
-# Modelo LiteLlama (Singleton)
+# Cliente OpenRouter (OpenAI Compatible)
 # ---------------------------------------------------------------------------
 
-_model = None
-_tokenizer = None
+_client = None
 
-def _get_model():
-    global _model, _tokenizer
-    if _model is None:
-        print(f"[Carregando modelo {MODEL_PATH}... isso pode levar alguns instantes]")
-        _tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
-        _model = AutoModelForCausalLM.from_pretrained(MODEL_PATH)
-        _model.eval()
-        print("[Modelo carregado com sucesso!]")
-    return _model, _tokenizer
+def _get_client():
+    global _client
+    if _client is None:
+        api_key = os.getenv("OPENAI_API_KEY")
+        base_url = os.getenv("OPENAI_API_BASE", "https://openrouter.ai/api/v1")
+        
+        if not api_key or "your_openai" in api_key:
+            logger.error("api_key_not_configured")
+            raise ValueError("OPENAI_API_KEY não configurada corretamente no .env")
+            
+        _client = OpenAI(
+            api_key=api_key,
+            base_url=base_url,
+        )
+    return _client
 
 # ---------------------------------------------------------------------------
-# Geração de resposta
+# Geração de resposta via OpenRouter
 # ---------------------------------------------------------------------------
 
 @mlflow.trace(name="generate_response")
 def _generate_response(question: str, data: str) -> str:
     """
     Monta o prompt com contexto dos dados do banco 
-    e gera a resposta com o LiteLlama.
+    e gera a resposta usando a API do OpenRouter.
     """
-    model, tokenizer = _get_model()
+    client = _get_client()
+    
+    # Escolha do modelo: Pode ser alterado no .env futuramente
+    # Usando gpt-4o-mini por ser rápido e barato
+    model_name = os.getenv("AGENT_MODEL", "openai/gpt-4o-mini")
 
     prompt = (
-        "Você é Ana, uma auditora de saúde. Responda em português com base nos dados.\n\n"
-        f"Dados do banco de dados:\n{data}\n\n"
-        f"Pergunta: {question}\nResposta:"
+        "Você é Ana, uma auditora de saúde especializada em glosas médicas. "
+        "Responda em português de forma profissional e objetiva com base nos dados fornecidos.\n\n"
+        f"Dados extraídos do banco de dados:\n{data}\n\n"
+        f"Pergunta do usuário: {question}"
     )
 
-    input_ids = tokenizer(prompt, return_tensors="pt").input_ids
-
-    with torch.no_grad():
-        tokens = model.generate(
-            input_ids,
-            max_new_tokens=MAX_NEW_TOKENS,
-            do_sample=False,
-            pad_token_id=tokenizer.eos_token_id,
+    try:
+        response = client.chat.completions.create(
+            model=model_name,
+            messages=[
+                {"role": "system", "content": "Você é uma assistente de análise de glosas de saúde."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=MAX_NEW_TOKENS,
+            temperature=0,
         )
-
-    # Decodifica apenas os tokens gerados (sem o prompt)
-    generated = tokens[0][input_ids.shape[-1]:]
-    return tokenizer.decode(generated.tolist(), skip_special_tokens=True).strip()
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        logger.error("llm_generation_error", error=str(e))
+        return f"Erro ao gerar resposta com o OpenRouter: {e}"
 
 # ---------------------------------------------------------------------------
 # Interface pública

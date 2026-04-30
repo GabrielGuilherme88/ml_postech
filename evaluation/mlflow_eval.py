@@ -1,7 +1,14 @@
+import sys
+import os
+from pathlib import Path
+
+# Adicionar a raiz do projeto ao PYTHONPATH para encontrar o módulo 'src'
+root_path = Path(__file__).resolve().parents[1]
+sys.path.append(str(root_path))
+
 import json
 import logging
 import asyncio
-import os
 import pandas as pd
 from dotenv import load_dotenv
 
@@ -59,11 +66,12 @@ def run_mlflow_evaluation(golden_set_path: str):
     setup_mlflow("Avaliacao_Agente_Ana")
 
     # Juízes do MLflow (usam OPENAI_API_KEY do .env)
-    if "OPENAI_API_KEY" not in os.environ:
-        logger.warning("⚠️ OPENAI_API_KEY não encontrada! Os juízes do MLflow falharão sem ela.")
-
-    logger.info("Executando mlflow.evaluate() com LLM-as-a-judge...")
+    logger.info("Executando mlflow.evaluate() com LLM-as-a-judge via OpenRouter...")
     
+    # Definir o modelo de juiz (judge) para o OpenRouter
+    judge_model = "openai/gpt-4o-mini"
+    model_uri = f"openai:/{judge_model}"
+
     with mlflow.start_run(run_name="Golden_Set_Evaluation"):
         resultados = mlflow.evaluate(
             model=avaliar_ana,
@@ -71,18 +79,18 @@ def run_mlflow_evaluation(golden_set_path: str):
             targets="ground_truth",
             model_type="question-answering",
             extra_metrics=[
-                answer_relevance(),
-                answer_correctness()
+                answer_relevance(model=model_uri),
+                answer_correctness(model=model_uri)
             ]
         )
         
         print("\n" + "="*50)
-        print("📊 RESULTADOS DA AVALIAÇÃO MLFLOW (LLM-AS-A-JUDGE)")
+        print("📊 RESULTADOS DA AVALIAÇÃO MLFLOW (OPENROUTER JUDGE)")
         print("="*50)
         for name, value in resultados.metrics.items():
             print(f"{name:30}: {value:.4f}")
         print("="*50)
-        print("✅ Verifique o painel do MLflow (aba Evaluation/Traces) para ver a tabela completa com as justificativas do juiz!")
+        print("✅ Verifique o painel do MLflow (aba Evaluation/Traces) para ver os detalhes!")
 
 if __name__ == "__main__":
     GOLDEN_SET = "data/golden_set/golden_set.json"

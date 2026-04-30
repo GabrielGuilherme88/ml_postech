@@ -1,8 +1,13 @@
+import sys
+import os
+from pathlib import Path
+
+# Adicionar a raiz do projeto ao PYTHONPATH para encontrar o módulo 'src'
+root_path = Path(__file__).resolve().parents[1]
+sys.path.append(str(root_path))
+
 import json
 import asyncio
-import os
-import pandas as pd
-from pathlib import Path
 from dotenv import load_dotenv
 import mlflow
 from mlflow.genai import evaluate
@@ -50,23 +55,27 @@ def run_genai_evaluation():
         })
 
     print(f"🚀 Iniciando mlflow.genai.evaluate com {len(eval_dataset)} casos...")
-    print("⚠️  Nota: Isso requer OPENAI_API_KEY configurada para o juiz (Correctness).")
+    print("🌐 Usando OpenRouter como provedor (OpenAI Compatible).")
+
+    # Definir o modelo de juiz (judge) para o OpenRouter
+    # Usaremos gpt-4o-mini que é eficiente para avaliação
+    judge_model = "openai/gpt-4o-mini"
 
     try:
         with mlflow.start_run(run_name="GenAI_Correctness_Check"):
             results = evaluate(
                 data=eval_dataset,
                 predict_fn=predict_ana,
-                scorers=[Correctness()],
+                scorers=[Correctness(model=f"openai:/{judge_model}")],
             )
             
             print("\n✅ Avaliação GenAI concluída!")
             print(results.metrics)
-            print("\nConfira os detalhes na aba 'Evaluation' do MLflow UI.")
+            print("\nConfira os detalhes na aba 'Evaluation' (ou 'Traces') do MLflow UI.")
             
     except Exception as e:
         print(f"❌ Erro durante a avaliação: {e}")
-        print("\nDica: Verifique se sua OPENAI_API_KEY é válida no arquivo .env.")
+        print("\nDica: Verifique se sua chave do OpenRouter no arquivo .env ainda tem créditos.")
 
 if __name__ == "__main__":
     run_genai_evaluation()
