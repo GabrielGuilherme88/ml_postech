@@ -21,6 +21,7 @@ python-dotenv
 scikit-learn
 seaborn
 skops
+spacy
 structlog
 torch
 transformers

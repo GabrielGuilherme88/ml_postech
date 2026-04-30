@@ -26,6 +26,7 @@ dependencies = [
     "scikit-learn",
     "seaborn",
     "skops",
+    "spacy",
     "torch",
     "transformers",
     "uvicorn",
