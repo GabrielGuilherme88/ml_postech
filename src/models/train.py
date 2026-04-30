@@ -93,7 +93,8 @@ def run_pipeline():
         modelo=modelo,
         parametros=parametros_rf,
         metricas={"MAE": mae},
-        X_train=X_treino
+        X_train=X_treino,
+        y_train=y_treino
     )
     
     df_futuro_analise = predict_future(modelo, df_futuro_analise, X_historico)

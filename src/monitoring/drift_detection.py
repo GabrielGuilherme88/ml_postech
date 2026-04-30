@@ -9,6 +9,9 @@ from evidently.metric_preset import DataDriftPreset, TargetDriftPreset
 
 
 
+import mlflow
+from src.models.mlflow_utils import setup_mlflow
+
 def run_drift_detection():
     # Caminho base do projeto
     base_dir = Path(__file__).resolve().parents[2]
@@ -85,6 +88,18 @@ def run_drift_detection():
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     drift_report.save_html(output_path)
     print(f"✅ Relatório de Monitoramento salvo com sucesso em: {output_path}")
+
+    # Log para o MLflow
+    try:
+        setup_mlflow("Monitoramento_Drift")
+        with mlflow.start_run(run_name="Evidently_Drift_Analysis"):
+            mlflow.log_artifact(output_path, artifact_path="reports")
+            # Extrair algumas métricas básicas do report para logar como métricas
+            # (Simplificado: apenas confirmando que o report foi gerado)
+            mlflow.log_metric("drift_report_generated", 1.0)
+            print("📊 Relatório enviado para o MLflow com sucesso!")
+    except Exception as e:
+        print(f"⚠️ Erro ao enviar para o MLflow: {e}")
 
     return output_path
 

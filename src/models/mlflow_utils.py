@@ -33,7 +33,7 @@ def setup_mlflow(experiment_name="Previsor_de_Glosas"):
     raise RuntimeError("❌ Não foi possível conectar ao MLflow após 10 tentativas")
 
 
-def log_training(modelo, parametros, metricas, X_train, nome_run="RandomForest_Glosas_v1"):
+def log_training(modelo, parametros, metricas, X_train, y_train=None, nome_run="RandomForest_Glosas_v1"):
     """
     Registra os dados do treinamento no MLflow.
     """
@@ -59,6 +59,33 @@ def log_training(modelo, parametros, metricas, X_train, nome_run="RandomForest_G
         # Log de tags úteis
         mlflow.set_tag("model_type", "RandomForest")
         mlflow.set_tag("version", "0.1.0")
+
+        # Gerar Relatório de Qualidade (Evaluation) na aba "Evaluation" do MLflow
+        if y_train is not None:
+            print("📊 Gerando relatório de qualidade (MLflow Evaluate)...")
+            try:
+                eval_df = X_train.copy()
+                eval_df["target"] = y_train.values
+                
+                mlflow.evaluate(
+                    model=run.info.model_uri if hasattr(run.info, 'model_uri') else None, # Tenta usar o modelo recém logado
+                    data=eval_df,
+                    targets="target",
+                    model_type="regressor",
+                    evaluators="default"
+                )
+            except Exception as e:
+                # Fallback caso o model_uri ainda não esteja pronto ou dê erro
+                try:
+                    mlflow.evaluate(
+                        model=lambda data: modelo.predict(data),
+                        data=eval_df,
+                        targets="target",
+                        model_type="regressor",
+                        evaluators="default"
+                    )
+                except Exception as e2:
+                    print(f"⚠️ Erro na avaliação: {e2}")
 
         print(f"🔗 MLflow Run ID salvo: {run.info.run_id}")
         return run.info.run_id
