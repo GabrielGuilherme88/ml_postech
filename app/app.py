@@ -68,7 +68,7 @@ openapi_tags = [
         "name": "MLflow",
         "description": "Acesso ao Dashboard de experimentos do MLflow. "
                        "Clique no link abaixo para abrir o dashboard completo: "
-                       "[http://localhost:8000/mlflow/](http://localhost:8000/mlflow/)",
+                       "[http://localhost:5000/mlflow/](http://localhost:5000/mlflow/)",
     },
     {
         "name": "Infra",
@@ -83,7 +83,7 @@ app = FastAPI(
         "API para interação com o agente de análise de glosas médicas.\n\n"
         "- **Agente Ana**: Faça perguntas em linguagem natural sobre glosas e reembolsos.\n"
         "- **MLflow**: Visualize os experimentos e métricas dos modelos treinados.\n"
-        "- **Frontend**: Acesse a interface completa em [http://localhost:8000/](http://localhost:8000/)"
+        "- **Frontend**: Acesse a interface completa em [http://localhost:5000/](http://localhost:5000/)"
     ),
     version="0.1.0",
     openapi_tags=openapi_tags,

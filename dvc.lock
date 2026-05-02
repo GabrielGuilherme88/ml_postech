@@ -59,7 +59,7 @@ stages:
     outs:
     - path: reports/inference_marker.txt
       hash: md5
-      md5: b3c698af90e255c75db9dc2041ab4786
+      md5: b7b072756772cc2dc0b1659cc77d6811
       size: 49
   drift:
     cmd: PYTHONPATH=. python src/monitoring/drift_detection.py
@@ -70,7 +70,7 @@ stages:
       size: 126976
     - path: reports/inference_marker.txt
       hash: md5
-      md5: b3c698af90e255c75db9dc2041ab4786
+      md5: b7b072756772cc2dc0b1659cc77d6811
       size: 49
     - path: src/monitoring/drift_detection.py
       hash: md5
@@ -79,5 +79,5 @@ stages:
     outs:
     - path: reports/drift_report.html
       hash: md5
-      md5: b69dff277b594c802e045543fe6871e6
+      md5: 607edd27d961ee408fe9a9936f49e8ca
       size: 3730748
